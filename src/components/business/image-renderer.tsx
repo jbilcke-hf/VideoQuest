@@ -9,9 +9,13 @@ export const ImageRenderer = ({
     segments = []
   },
   onUserAction,
+  onUserHover,
+  isLoading = false,
 }: {
   rendered: RenderedScene
-  onUserAction: (action: string) => void
+  onUserAction: (actionnable: string) => void
+  onUserHover: (actionnable: string) => void
+  isLoading?: boolean
 }) => {
   const imgRef = useRef<HTMLImageElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -20,7 +24,7 @@ export const ImageRenderer = ({
 
   useEffect(() => {
     if (maskBase64) {
-      console.log("maskBase64:", maskBase64)
+      // console.log("maskBase64:", maskBase64)
       const img = new Image();
       img.onload = function () {
         canvasRef.current = document.createElement('canvas');
@@ -31,7 +35,7 @@ export const ImageRenderer = ({
       }
       img.src = "data:image/png;base64," + maskBase64;
     } else {
-      console.log("error, no maskBase64 detected!")
+      // console.log("error, no maskBase64 detected!")
     }
   }, [maskBase64]);
 
@@ -82,15 +86,21 @@ export const ImageRenderer = ({
       if(distance < minDistance) {
         minDistance = distance;
         closestSegment = segment;
+        console.log(`${distance} -> ${segment.label}: score = ${segment.score}`)
       }
     });
 
     return closestSegment;
   }
 
-  const handleMouseEvent = (event: React.MouseEvent, isClickEvent: boolean = false) => {
+  const handleMouseEvent = async (event: React.MouseEvent, isClickEvent: boolean = false) => {
     if (!contextRef.current) return; // Return early if mask image has not been loaded yet
   
+    if (isLoading) {
+      // we ignore all user interactions
+      return false
+    }
+
     const boundingRect = imgRef.current!.getBoundingClientRect();
     const x = event.clientX - boundingRect.left;
     const y = event.clientY - boundingRect.top;
@@ -98,22 +108,28 @@ export const ImageRenderer = ({
     const newSegment = getSegmentAt(x, y)
 
     if (actionnable !== newSegment.label) {
+      if (newSegment.label) {
+        console.log(`User is hovering "${newSegment.label}"`);
+      } else {
+        console.log(`Nothing in the area`);
+      }
       setActionnable(newSegment.label)
     }
 
-    if (!newSegment.label) { return }
-
-    console.log("actionnable: ", actionnable)
-
     if (isClickEvent) {
-      console.log("User clicked on " + actionnable);
-      // onUserAction(actionnable);
+      if (!newSegment.label) {
+        return
+      }
+      console.log("User clicked on " + newSegment.label)
+      onUserAction(actionnable)
+    } else {
+      onUserHover(actionnable)
     }
   };
 
   if (!assetUrl) {
     return <div className="flex w-full h-screen items-center justify-center text-center">
-      <div>Rendering first frame.. (might take around 30s)</div>
+      <div>Generating a new panel..</div>
     </div>
   }
 
@@ -150,17 +166,22 @@ export const ImageRenderer = ({
         */
 
   return (
-    <div className="w-full py-8 px-2">
+    <div className={[
+      "w-full py-8 px-2",
+      isLoading ? "animate-pulse" : ""
+    ].join(" ")
+    }>
       <div className="relative w-full">
         <img
-          src={"data:image/png;base64," + maskBase64}
+          src={assetUrl}
+          // src={"data:image/png;base64," + maskBase64}
           ref={imgRef}
           width="1024px"
           height="512px"
           className={
             [
-              "absolute top-0 left-0 opacity-30",
-              actionnable ? "cursor-pointer" : ""
+              "absolute top-0 left-0",
+              actionnable && !isLoading ? "cursor-pointer" : ""
             ].join(" ")
           }
           onMouseDown={(event) => handleMouseEvent(event, true)}

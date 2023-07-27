@@ -1,5 +1,4 @@
-import { pick } from "./pick"
-import { Agent, Scene } from "./types"
+import { Game } from "./types"
 
 const actions = [
   "idling",
@@ -25,8 +24,9 @@ const lights = [
   "during the day",
 ]
 
-const actionnables = [
+const initialActionnables = [
   "chest",
+  "box",
   // "door",
   // "window",
   // "sail",
@@ -34,41 +34,33 @@ const actionnables = [
   // "ship's wheel",
   // "hat",
   // "barrel",
-  "cannon",
+  // "cannon",
   // "rope",
   // "bucket",
-  "skull",
+ // "skull",
   "parrot",
   "lock",
-  "ship",
+  // "ship",
   // "wooden leg"
 ]
 
-export const agent: Agent = {
+const initialSituation = [
+  `inside the hold of a pirate ship`,
+  `a pirate chest in the center with a large lock`,
+  `a parrot on top of it`,
+  `at sunset`,
+].join(", ")
+
+export const game: Game = {
   title: "Pirates",
   type: "pirates",
-  simulate: (): Scene => {
-    const action = pick(actions)
-    const position = pick(positions)
-    const light = pick(lights)
-
+  initialSituation,
+  initialActionnables,
+  getScenePrompt: (situation?: string) => [
     // this prompt is beautiful:
     // screenshot from an adventure videogame, inside the hold of a pirate ship, with a pirate chest in the center, at sunset, beautiful, award winning, unreal engine, intricate details
-    const prompt = [
       `screenshot from an adventure videogame`,
-      `inside the hold of a pirate ship`,
-      `a pirate chest in the center with a large lock`,
-      `a parrot on top of it`,
-      `at sunset`,
+      situation || initialSituation,
       `unreal engine`,
-    ].join(", ")
-
-    return {
-      action,
-      position,
-      light,
-      actionnables,
-      prompt
-    }
-  }
+    ],
 }

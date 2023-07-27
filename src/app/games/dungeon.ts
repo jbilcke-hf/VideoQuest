@@ -1,5 +1,4 @@
-import { pick } from "./pick"
-import { Agent, Scene } from "./types"
+import { Game, Scene } from "./types"
 
 const actions = [
   "not moving",
@@ -24,45 +23,37 @@ const positions = [
 
 const lights = [
   "lit through windows",
-  "lit through wall-mounted torchs"
+  "lit through wall-mounted torches"
   // "poorly lit"
 ]
 
-const actionnables = [
-  "floor",
-  "fireplace",
+const initialSituation = [
+  `inside a beautiful room with stone walls and wooden floor`,
+  `a fireplace on the wall and a metal chest in the center with a large lock`,
+].join(", ")
+
+const initialActionnables = [
+ //  "floor",
+  // "fireplace",
   "door",
-  "window",
+ // "window",
   "chair",
+  "chest",
+  "key",
   "table",
-  "torch"
+  // torch"
 ]
 
-export const agent: Agent = {
+export const game: Game = {
   title: "Dungeon",
   type: "dungeon",
-  simulate: (): Scene => {
-    const action = pick(actions)
-    const position = pick(positions)
-    const light = pick(lights)
-
-    const prompt = [
-      `first-person footage`,
-      action,
-      position,
-      light,
-      `medieval`,
-      `photography`,
-      `documentary`,
-      `high res`,
-    ].join(", ")
-
-    return {
-      action,
-      position,
-      light,
-      actionnables,
-      prompt
-    }
-  }
+  initialSituation,
+  initialActionnables,
+  getScenePrompt: (situation?: string) => [
+    `screenshot from an adventure videogame`,
+        // `first-person footage`,
+    situation || initialSituation,
+    `medieval`,
+    `unreal engine`,
+  ].join(", ")
 }

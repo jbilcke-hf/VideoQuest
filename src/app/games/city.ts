@@ -1,5 +1,4 @@
-import { pick } from "./pick"
-import { Agent, Scene } from "./types"
+import { Game } from "./types"
 
 const actions = [
   "busy pedestrians",
@@ -25,40 +24,33 @@ const lights = [
   // "during the night",
 ]
 
-const actionnables = [
+const initialSituation = [
+  `over the city town center`,
+  `at noon`,
+].join(", ")
+
+const initialActionnables = [
   "building",
   "road",
   "car",
   "tower",
   "tree",
   "river",
-  "sea"
+  "sea",
+  "house"
 ]
 
-export const agent: Agent = {
+export const game: Game = {
   title: "City",
   type: "city",
-  simulate: (): Scene => {
-    const action = pick(actions)
-    const position = pick(positions)
-    const light = pick(lights)
-
-    const prompt = [
-      `static isometrical view of 3D rendered city`,
-      action,
-      position,
-      light,
-      `isometric`,
-      `game`,
-      `high res`,
-    ].join(", ")
-
-    return {
-      action,
-      position,
-      light,
-      actionnables,
-      prompt
-    }
-  }
+  initialSituation,
+  initialActionnables,
+  getScenePrompt: (situation?: string) => [
+    `isometrical bird view of 3D rendered city`,
+    situation || initialSituation,
+    `game screenshot`,
+    `isometric`,
+    `unreal engine`,
+    `high res`,
+  ]
 }
