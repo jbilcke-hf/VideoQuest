@@ -111,7 +111,7 @@ export default function Main() {
           </div>)}
         </div>
       </div>
-      <ImageRenderer rendered={rendered} />
+      <ImageRenderer {...rendered} />
     </div>
   )
 }
