@@ -34,10 +34,13 @@ const actionnables = [
   // "ship's wheel",
   // "hat",
   // "barrel",
-  // "cannon",
+  "cannon",
   // "rope",
   // "bucket",
+  "skull",
   "parrot",
+  "lock",
+  "ship",
   // "wooden leg"
 ]
 
@@ -54,9 +57,8 @@ export const agent: Agent = {
     const prompt = [
       `screenshot from an adventure videogame`,
       `inside the hold of a pirate ship`,
-      `with a pirate chest in the center`,
-      `a parrot`,
-      `and a wooden leg`,
+      `a pirate chest in the center with a large lock`,
+      `a parrot on top of it`,
       `at sunset`,
       `unreal engine`,
     ].join(", ")

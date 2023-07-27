@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/select"
 
 import { render } from "./render"
-import { Agent, AgentType, Scene } from "./agents/types"
+import { AgentType, Scene } from "./agents/types"
 import { agents, defaultAgent, getAgent } from "./agents"
-import { ImageSegment, RenderedScene } from "./types"
+import { RenderedScene } from "./types"
 
 export default function Main() {
   const [isPending, startTransition] = useTransition()
@@ -28,54 +28,59 @@ export default function Main() {
   })
   const ref = useRef<AgentType>(defaultAgent)
    
+
+  const loadNextScene = async () => {
+    // console.log(`update view..`)
+
+    await startTransition(async () => {
+
+      // console.log(`getting agent..`)
+      const type = ref?.current
+      const agent = getAgent(type)
+
+      // console.log(`asking agent to determine things..`)
+      const scene = agent.simulate()
+
+      // console.log(`rendering scene..`)
+      const newRendered = await render(
+        scene.prompt,
+        scene.actionnables.slice(0, 5) // too many can slow us down it seems
+      )
+
+      if (type !== ref?.current) {
+        console.log("agent type changed! reloading scene")
+        setTimeout(() => { loadNextScene() }, 0)
+        return
+      } 
+
+      if (newRendered.assetUrl) {
+        setRendered(newRendered)
+        // console.log(`got a new url: ${newUrl}`)
+        setScene(scene)
+      }
+    })
+  }
+
   useEffect(() => {
-    
-    const updateView = async () => {
-      // console.log(`update view..`)
-
-      await startTransition(async () => {
-
-        // console.log(`getting agent..`)
-        const type = ref?.current
-        const agent = getAgent(type)
-
-        // console.log(`asking agent to determine things..`)
-        const scene = agent.simulate()
-
-        // console.log(`rendering scene..`)
-        const newRendered = await render(
-          scene.prompt,
-          scene.actionnables.slice(0, 5) // too many can slow us down it seems
-        )
-
-        if (type !== ref?.current) {
-          console.log("agent type changed! reloading scene")
-          setTimeout(() => { updateView() }, 0)
-          return
-        } 
-
-
-        if (newRendered.assetUrl) {
-          setRendered(newRendered)
-          // console.log(`got a new url: ${newUrl}`)
-          setScene(scene)
-          setTimeout(() => { updateView()}, 1000)
-        } else {
-          // console.log(`going to wait a bit more: ${newUrl}`)
-          setTimeout(() => { updateView()}, newRendered.error ? 6000 : 3000)
-        }
-      })
-    }
-
-    updateView()
-
+    loadNextScene()
   }, [])
+
+  const handleUserAction = (action: string) => {
+    console.log("user action:", action)
+
+    // TODO: ask Llama2 what to do about it
+    // we need a frame and some actionnables,
+    // perhaps even some music or sound effects
+
+    console.log("we don't know what to do, so we just load the next frame!")
+    loadNextScene()
+  }
 
   return (
     <div className="flex flex-col w-full pt-4">
       <div className="flex flex-col space-y-3 px-2">
         <div className="flex flex-row items-center space-x-3">
-          <label className="flex">Select a game:</label>
+          <label className="flex">Select a story:</label>
           <Select
             defaultValue={defaultAgent}
             onValueChange={(value) => {
@@ -97,7 +102,7 @@ export default function Main() {
             </SelectContent>
           </Select>
         </div>
-        <p>Note: changing the model might take up to 1 minute</p>
+        <p>Note: it takes about 1 minute to generate a new game panel</p>
           
         {(scene) ? <div>
           <p>Action: {scene.action}</p>
@@ -111,7 +116,7 @@ export default function Main() {
           </div>)}
         </div>
       </div>
-      <ImageRenderer {...rendered} />
+      <ImageRenderer rendered={rendered} onUserAction={handleUserAction} />
     </div>
   )
 }
