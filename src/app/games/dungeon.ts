@@ -55,5 +55,5 @@ export const game: Game = {
     situation || initialSituation,
     `medieval`,
     `unreal engine`,
-  ].join(", ")
+  ]
 }

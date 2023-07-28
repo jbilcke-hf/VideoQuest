@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
-import qs from "qs"
+import { useSearchParams } from 'next/navigation'
 
 import { ImageRenderer } from "@/components/business/image-renderer"
 
@@ -30,9 +30,11 @@ export default function Main() {
     maskBase64: "",
     segments:[]
   })
-  const urlParams = qs.parse(window.location.search.slice(1))
-  console.log("urlParams:", urlParams)
-  const ref = useRef<GameType>(`${urlParams?.game as any}` as GameType)
+  const searchParams = useSearchParams()
+ 
+  const requestedGame = (searchParams.get('game') as GameType) || defaultGame
+  console.log("requestedGame:", requestedGame)
+  const gameRef = useRef<GameType>(requestedGame)
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
   const [dialogue, setDialogue] = useState("")
@@ -47,13 +49,14 @@ export default function Main() {
 
       // console.log(`getting agent..`)
       // note: we use a ref so that it can be changed in the background
-      const type = ref?.current
+      const type = gameRef?.current
+      console.log("type:", type)
       const game = getGame(type)
 
       // console.log(`rendering scene..`)
       const newRendered = await render(
         // SCENE PROMPT
-        [...game.getScenePrompt(nextSituation)].join(", "),
+        game.getScenePrompt(nextSituation).join(", "),
 
         // ACTIONNABLES
         (Array.isArray(nextActionnables) && nextActionnables.length
@@ -63,7 +66,7 @@ export default function Main() {
       )
 
       // detect if something changed in the background
-      if (type !== ref?.current) {
+      if (type !== gameRef?.current) {
         console.log("agent type changed! reloading scene")
         setTimeout(() => { loadNextScene() }, 0)
         return
@@ -94,7 +97,7 @@ export default function Main() {
 
     await startTransition(async () => {
 
-      const game = getGame(ref.current)
+      const game = getGame(gameRef.current)
 
       let newDialogue = ""
       try {
@@ -131,9 +134,9 @@ export default function Main() {
         <div className="flex flex-row items-center space-x-3">
           <label className="flex">Select a story:</label>
           <Select
-            defaultValue={defaultGame}
+            defaultValue={gameRef.current}
             onValueChange={(value) => {
-              ref.current = value as GameType
+              gameRef.current = value as GameType
               setRendered({
                 assetUrl: "", 
                 error: "",

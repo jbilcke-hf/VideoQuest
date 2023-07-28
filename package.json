@@ -45,7 +45,6 @@
     "next": "13.4.10",
     "pick": "^0.0.1",
     "postcss": "8.4.26",
-    "qs": "^6.11.2",
     "react": "18.2.0",
     "react-circular-progressbar": "^2.1.0",
     "react-day-picker": "^8.8.0",
