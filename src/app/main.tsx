@@ -165,7 +165,7 @@ export default function Main() {
             {i < (rendered.segments.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <p className="text-xl font-normal">You seems to be be looking at <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
+        <p className="text-xl font-normal">You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
       </div>
       <ImageRenderer
         rendered={rendered}
