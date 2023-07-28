@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import { ImageSegment, RenderedScene } from "@/app/types"
+import { ProgressBar } from "../misc/progress"
 
 export const ImageRenderer = ({
   rendered: {
@@ -21,6 +22,7 @@ export const ImageRenderer = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
+  const [progressPercent, setProcessPercent] = useState(0)
 
   useEffect(() => {
     if (maskBase64) {
@@ -86,7 +88,7 @@ export const ImageRenderer = ({
       if(distance < minDistance) {
         minDistance = distance;
         closestSegment = segment;
-        console.log(`${distance} -> ${segment.label}: score = ${segment.score}`)
+        // console.log(`${distance} -> ${segment.label}: score = ${segment.score}`)
       }
     });
 
@@ -127,9 +129,36 @@ export const ImageRenderer = ({
     }
   };
 
+  useEffect(() => {
+    let progress = 0
+
+    // note: when everything is fine, it takes about 45 seconds to render a new scene
+
+    const computeProgress = async () => {
+      console.log("'computing progress")
+      if (!isLoading && assetUrl) {
+        console.log("Finished loading!")
+        setProcessPercent(100)
+        return
+      }
+
+      console.log("still loading..")
+
+      setTimeout(() => {
+        setProcessPercent(progress++)
+      }, 1000)
+
+    }
+
+    computeProgress()
+  }, [isLoading, assetUrl])
+
   if (!assetUrl) {
     return <div className="flex w-full h-screen items-center justify-center text-center">
-      <div>Generating a new panel..</div>
+      <ProgressBar
+        text="⌛"
+        progressPercentage={progressPercent}
+      />
     </div>
   }
 

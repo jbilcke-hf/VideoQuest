@@ -51,7 +51,7 @@ export const game: Game = {
   initialActionnables,
   getScenePrompt: (situation?: string) => [
     `screenshot from an adventure videogame`,
-        // `first-person footage`,
+    // `first-person footage`,
     situation || initialSituation,
     `medieval`,
     `unreal engine`,

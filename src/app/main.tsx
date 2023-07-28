@@ -18,6 +18,7 @@ import { RenderedScene } from "./types"
 import { predict } from "./predict"
 import { GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
+import { getPrompts } from "./prompts"
 
 export default function Main() {
   const [isPending, startTransition] = useTransition()
@@ -80,56 +81,42 @@ export default function Main() {
 
   const handleUserAction = async (actionnable: string) => {
     console.log("user actionnable:", actionnable)
- 
+  
+    setLoading(true)
+
     // TODO: ask Llama2 what to do about it
     // we need a frame and some actionnables,
     // perhaps even some music or sound effects
 
     await startTransition(async () => {
- 
-      setLoading(true)
 
       const game = getGame(ref.current)
-      const initialPrompt = [...game.getScenePrompt()].join(", ")
 
-      const currentPrompt = situation
-        ? [...game.getScenePrompt(situation)].join(", ")
-        : initialPrompt
+      const prompts = getPrompts(game, situation, actionnable)
+
+      console.log("prompts:", prompts)
 
       try {
-        const basePrompt = [
-          `QUESTION: You are the AI game master of a role video game.`,
-          initialPrompt !== currentPrompt ? `The initial scene of the game was this: "${initialPrompt}".` : '',
-          `The player is currently in this scene: "${currentPrompt}".`,
-          `The player has just clicked on "${actionnable}".`
-        ]
 
         console.log("ask the LLM to invent next steps..")
 
-        const rawSituation = await predict([
-          ...basePrompt,
-          `Please describe the new scene to display in intricate details: the environment, lights, era, characters, objects, textures, light etc. You must include important objects, that the user can click on (eg. characters, doors, vehicles, useful objects).\nANSWER:`
-        ].join(" "))
+        const rawSituation = await predict(prompts.situationPrompt)
 
         console.log(`rawSituation: `, rawSituation)
 
         if (!rawSituation) {
           throw new Error("failed to generate the situation")
         }
-        const newSituation = `${rawSituation.split("QUESTION:")[0] || ""}`
+        const newSituation = `${rawSituation || ""}`
         if (!newSituation) {
           throw new Error("failed to parse the situation")
         }
 
         console.log(`newSituation: `, newSituation)
 
-        const rawActionnables = await predict([
-          ...basePrompt,
-          `Here are the 4 most important objects visible in this scene, that the user can click on. The list is in JSON (list of strings). You must list basic name of things (eg. "parrot", "chest", "spaceship", "glass", "door", "person", "window", "light", "knob", "button" etc..) \nJSON = [`
-        ].join(" "))
+        const rawActionnables = await predict(prompts.actionnablesPrompt)
         console.log(`rawActionnables: `, rawActionnables)
 
- 
         if (!rawActionnables) {
           throw new Error("failed to generate the actionnables")
         }
@@ -152,17 +139,13 @@ export default function Main() {
  
         console.log(`newActionnables: `, newActionnables)
 
- 
-        const rawDialogue = await predict([
-          ...basePrompt,
-          `As a game master, what should you say next? (Only reply with 2 sentences, please).\nANSWER:`
-        ].join(" "))
+        const rawDialogue = await predict(prompts.dialoguePrompt)
         console.log(`rawDialogue: `, rawDialogue)
 
         if (!rawDialogue) {
           throw new Error("failed to generate the dialogue")
         }
-        const newDialogue = `${rawDialogue.split("QUESTION:")[0] || ""}`
+        const newDialogue = `${rawDialogue || ""}`
         if (!newDialogue) {
             throw new Error("failed to parse the dialogue")
         }
