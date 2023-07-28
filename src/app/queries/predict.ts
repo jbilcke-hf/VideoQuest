@@ -7,6 +7,8 @@ const hf = hfi.endpoint(`${process.env.HF_INFERENCE_ENDPOINT_URL || ""}`)
 
 export async function predict(inputs: string) {
 
+  console.log(`predict: `, inputs)
+  
   let instructions = ""
   try {
     for await (const output of hf.textGenerationStream({

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
+import qs from "qs"
 
 import { ImageRenderer } from "@/components/business/image-renderer"
 
@@ -15,10 +16,11 @@ import {
 import { render } from "./render"
 
 import { RenderedScene } from "./types"
-import { predict } from "./predict"
 import { GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
-import { getPrompts } from "./prompts"
+import { getBackground } from "@/app/queries/getBackground"
+import { getDialogue } from "@/app/queries/getDialogue"
+import { getActionnables } from "@/app/queries/getActionnables"
 
 export default function Main() {
   const [isPending, startTransition] = useTransition()
@@ -28,7 +30,9 @@ export default function Main() {
     maskBase64: "",
     segments:[]
   })
-  const ref = useRef<GameType>(defaultGame)
+  const urlParams = qs.parse(window.location.search.slice(1))
+  console.log("urlParams:", urlParams)
+  const ref = useRef<GameType>(`${urlParams?.game as any}` as GameType)
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
   const [dialogue, setDialogue] = useState("")
@@ -92,75 +96,31 @@ export default function Main() {
 
       const game = getGame(ref.current)
 
-      const prompts = getPrompts(game, situation, actionnable)
-
-      console.log("prompts:", prompts)
+      let newDialogue = ""
+      try {
+        newDialogue = await getDialogue({ game, situation, actionnable })
+        console.log(`newDialogue:`, newDialogue)
+        setDialogue(newDialogue)
+      } catch (err) {
+        console.log(`failed to generate dialogue (but it's only a nice to have, so..)`)
+        setDialogue("")
+      }
 
       try {
+        const newActionnables = await getActionnables({ game, situation, actionnable, newDialogue })
+        console.log(`newActionnables:`, newActionnables)
 
-        console.log("ask the LLM to invent next steps..")
-
-        const rawSituation = await predict(prompts.situationPrompt)
-
-        console.log(`rawSituation: `, rawSituation)
-
-        if (!rawSituation) {
-          throw new Error("failed to generate the situation")
-        }
-        const newSituation = `${rawSituation || ""}`
-        if (!newSituation) {
-          throw new Error("failed to parse the situation")
-        }
-
-        console.log(`newSituation: `, newSituation)
-
-        const rawActionnables = await predict(prompts.actionnablesPrompt)
-        console.log(`rawActionnables: `, rawActionnables)
-
-        if (!rawActionnables) {
-          throw new Error("failed to generate the actionnables")
-        }
-
-        let newActionnables = []
-        try {
-          // we remove all [ or ]
-          const sanitized = rawActionnables.replaceAll("[", "").replaceAll("]", "")
-          newActionnables = (JSON.parse(`[${sanitized}]`) as string[]).map(item =>
-            // clean the words to remove any punctuation
-            item.replace(/\W/g, '').trim()
-          )
-
-          if (!newActionnables.length) {
-            throw new Error("no actionnables")
-          }
-        } catch (err) {
-          throw new Error("failed to parse the actionnables")
-        }
- 
-        console.log(`newActionnables: `, newActionnables)
-
-        const rawDialogue = await predict(prompts.dialoguePrompt)
-        console.log(`rawDialogue: `, rawDialogue)
-
-        if (!rawDialogue) {
-          throw new Error("failed to generate the dialogue")
-        }
-        const newDialogue = `${rawDialogue || ""}`
-        if (!newDialogue) {
-            throw new Error("failed to parse the dialogue")
-        }
-        console.log(`newDialogue: `, newDialogue)
-
-
-        setDialogue(newDialogue)
-        setSituation(newSituation)
+        const newBackground = await getBackground({ game, situation, actionnable, newDialogue, newActionnables })
+        console.log(`newBackground:`, newBackground)
+        setSituation(newBackground)
 
         console.log("loading next scene..")
-        await loadNextScene(newSituation, newActionnables)
+        await loadNextScene(newBackground, newActionnables)
 
-        // todo we could also use useEffect
+          // todo we could also use useEffect
       } catch (err) {
-       console.error(err)
+        console.error(`failed to get one of the mandatory entites: ${err}`)
+        setLoading(false)
       }
     })
   }

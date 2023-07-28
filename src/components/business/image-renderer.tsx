@@ -33,7 +33,9 @@ export const ImageRenderer = ({
         canvasRef.current = document.createElement('canvas');
         canvasRef.current.width = img.width;
         canvasRef.current.height = img.height;
-        contextRef.current = canvasRef.current.getContext('2d');
+        contextRef.current = canvasRef.current.getContext('2d', {
+          willReadFrequently: true
+        });
         contextRef.current!.drawImage(img, 0, 0, img.width, img.height);
       }
       img.src = "data:image/png;base64," + maskBase64;
@@ -104,6 +106,14 @@ export const ImageRenderer = ({
       return false
     }
 
+    // sometimes we generate an image, but the segmentation fails
+    // so if we click anywhere bug there are no segments,
+    // we inform the rest of the app by passing nothing
+    if (isClickEvent && segments.length == 0) {
+      onUserAction("nothing, to trigger a scene reload")
+      return
+    }
+
     const boundingRect = imgRef.current!.getBoundingClientRect();
     const x = event.clientX - boundingRect.left;
     const y = event.clientY - boundingRect.top;
@@ -112,10 +122,12 @@ export const ImageRenderer = ({
 
     if (actionnable !== newSegment.label) {
       if (newSegment.label) {
-        console.log(`User is hovering "${newSegment.label}"`);
+        console.log(`User is hovering "${newSegment.label}"`)
       } else {
-        console.log(`Nothing in the area`);
+        console.log(`Nothing in the area`)
       }
+
+      // update the actionnable immediately, so we can show the hand / finger cursor pointer
       setActionnable(newSegment.label)
     }
 
@@ -126,7 +138,11 @@ export const ImageRenderer = ({
       console.log("User clicked on " + newSegment.label)
       onUserAction(actionnable)
     } else {
-      onUserHover(actionnable)
+      // only trigger hover events if there are segments,
+      // otherwise it's best to stay silent
+      if (segments.length) {
+        onUserHover(actionnable)
+      }
     }
   };
 
@@ -142,9 +158,9 @@ export const ImageRenderer = ({
         return
       }
 
-      console.log("still loading..")
+      // console.log("still loading..")
 
-      console.log("updating progress")
+      // console.log("updating progress")
       progress = progress + 1
       setProcessPercent(progress)
 

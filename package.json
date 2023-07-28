@@ -45,7 +45,9 @@
     "next": "13.4.10",
     "pick": "^0.0.1",
     "postcss": "8.4.26",
+    "qs": "^6.11.2",
     "react": "18.2.0",
+    "react-circular-progressbar": "^2.1.0",
     "react-day-picker": "^8.8.0",
     "react-dom": "18.2.0",
     "tailwind-merge": "^1.13.2",
@@ -57,5 +59,8 @@
     "uuid": "^9.0.0",
     "zod": "^3.21.4",
     "zustand": "^4.3.9"
+  },
+  "devDependencies": {
+    "@types/qs": "^6.9.7"
   }
 }
