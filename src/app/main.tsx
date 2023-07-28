@@ -128,6 +128,8 @@ export default function Main() {
     })
   }
 
+  const clickables = Array.from(new Set(rendered.segments.map(s => s.label)).values())
+
   return (
     <div className="flex flex-col w-full pt-4">
       <div className="flex flex-col space-y-3 px-2">
@@ -154,17 +156,16 @@ export default function Main() {
             </SelectContent>
           </Select>
         </div>
-        <p className="text-xl">The server is blowing up! Loading a panel may take a few minutes.</p>
-        <p className="text-xl">{dialogue}</p>
+        <p className="text-xl">This experimental demo uses shared ressources: each scene may take more than 45s to load.</p>
         <div className="flex flex-row">
-          <div className="text-xl mr-2">🔎 Possible items:</div>
-          {rendered.segments.map((segment, i) => 
+          <div className="text-xl mr-2">🔎 Clickable items:</div>
+          {clickables.map((clickable, i) => 
           <div key={i} className="flex flex-row text-xl mr-2">
-            <div className="">{segment.label}</div>
+            <div className="">{clickable}</div>
             {i < (rendered.segments.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <p className="text-xl font-normal">You may be looking at.. <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
+        <p className="text-xl font-normal">You seems to be be looking at <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
       </div>
       <ImageRenderer
         rendered={rendered}
@@ -172,6 +173,7 @@ export default function Main() {
         onUserHover={setHoveredActionnable}
         isLoading={isLoading}
       />
+      <p className="text-xl">{dialogue}</p>
     </div>
   )
 }
