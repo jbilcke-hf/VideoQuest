@@ -235,7 +235,7 @@ export const ImageRenderer = ({
           height="512px"
           className={
             [
-              "absolute top-0 left-0",
+             //  "absolute top-0 left-0",
               actionnable && !isLoading ? "cursor-pointer" : ""
             ].join(" ")
           }
