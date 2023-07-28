@@ -18,6 +18,7 @@ export const ImageRenderer = ({
   onUserHover: (actionnable: string) => void
   isLoading?: boolean
 }) => {
+  const timeoutRef = useRef<any>()
   const imgRef = useRef<HTMLImageElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -147,14 +148,17 @@ export const ImageRenderer = ({
   };
 
   useEffect(() => {
+    clearTimeout(timeoutRef.current)
     let progress = 0
-
+    setProcessPercent(0)
     // note: when everything is fine, it takes about 45 seconds to render a new scene
 
     const computeProgress = async () => {
       if (!showLoaderRef.current) {
         console.log("Asked to hide the loader")
+        progress = 100
         setProcessPercent(100)
+        clearTimeout(timeoutRef.current)
         return
       }
 
@@ -164,14 +168,13 @@ export const ImageRenderer = ({
       progress = progress + 1
       setProcessPercent(progress)
 
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         computeProgress()
       }, 1000)
-
     }
 
     computeProgress()
-  }, [])
+  }, [assetUrl])
 
   
   useEffect(() => {
