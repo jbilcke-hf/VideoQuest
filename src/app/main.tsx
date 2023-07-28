@@ -123,9 +123,9 @@ export default function Main() {
 
         let newActionnables = []
         try {
-          newActionnables = (JSON.parse(
-            `[${rawActionnables.split("]")[0] || ""}]`
-          ) as string[]).map(item =>
+          // we remove all [ or ]
+          const sanitized = rawActionnables.replaceAll("[", "").replaceAll("]", "")
+          newActionnables = (JSON.parse(`[${sanitized}]`) as string[]).map(item =>
             // clean the words to remove any punctuation
             item.replace(/\W/g, '').trim()
           )

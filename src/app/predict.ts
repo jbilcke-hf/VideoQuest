@@ -24,6 +24,9 @@ export async function predict(inputs: string) {
       if (
         instructions.includes("</s>") || 
         instructions.includes("<s>") ||
+        instructions.includes("[INST]") ||
+        instructions.includes("[/INST]") ||
+        instructions.includes("<SYS>") ||
         instructions.includes("</SYS>") ||
         instructions.includes("<|end|>") ||
         instructions.includes("<|assistant|>")
@@ -41,6 +44,9 @@ export async function predict(inputs: string) {
     .replaceAll("<|end|>", "")
     .replaceAll("<s>", "")
     .replaceAll("</s>", "")
+    .replaceAll("[INST]", "")
+    .replaceAll("[/INST]", "") 
+    .replaceAll("<SYS>", "")
     .replaceAll("</SYS>", "")
     .replaceAll("<|assistant|>", "")
     .replaceAll('""', '"')

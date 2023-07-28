@@ -3,7 +3,7 @@
 export const VideoRenderer = ({ url }: { url?: string }) => {
 
   if (!url) {
-    return <div className="flex w-full h-screen items-center justify-center text-center">
+    return <div className="flex w-full pt-8 items-center justify-center text-center">
       <div>Rendering first frames.. (might take around 30s)</div>
     </div>
   }

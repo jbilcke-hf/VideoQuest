@@ -23,6 +23,7 @@ export const ImageRenderer = ({
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
   const [progressPercent, setProcessPercent] = useState(0)
+  const showLoaderRef = useRef(true)
 
   useEffect(() => {
     if (maskBase64) {
@@ -135,26 +136,35 @@ export const ImageRenderer = ({
     // note: when everything is fine, it takes about 45 seconds to render a new scene
 
     const computeProgress = async () => {
-      console.log("'computing progress")
-      if (!isLoading && assetUrl) {
-        console.log("Finished loading!")
+      if (!showLoaderRef.current) {
+        console.log("Asked to hide the loader")
         setProcessPercent(100)
         return
       }
 
       console.log("still loading..")
 
+      console.log("updating progress")
+      progress = progress + 1
+      setProcessPercent(progress)
+
       setTimeout(() => {
-        setProcessPercent(progress++)
+        computeProgress()
       }, 1000)
 
     }
 
     computeProgress()
+  }, [])
+
+  
+  useEffect(() => {
+    showLoaderRef.current = isLoading || !assetUrl
   }, [isLoading, assetUrl])
+  
 
   if (!assetUrl) {
-    return <div className="flex w-full h-screen items-center justify-center text-center">
+    return <div className="flex w-full pt-8 items-center justify-center text-center">
       <ProgressBar
         text="⌛"
         progressPercentage={progressPercent}
