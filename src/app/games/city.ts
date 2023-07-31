@@ -1,3 +1,4 @@
+import { edu } from "@/lib/fonts"
 import { Game } from "./types"
 
 const actions = [
@@ -43,6 +44,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "City",
   type: "city",
+  className:  edu.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [

@@ -1,6 +1,6 @@
 "use client"
 
-import { CircularProgressbar } from "react-circular-progressbar"
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar"
 import "react-circular-progressbar/dist/styles.css"
 
 export function ProgressBar ({
@@ -23,20 +23,20 @@ export function ProgressBar ({
         text={text || ""}   
 
         // Width of circular line relative to total width of component, a value from 0-100. Default: 8.
-        strokeWidth={8}
+        strokeWidth={12}
 
-        /*
+        
           // As a convenience, you can use buildStyles to configure the most common style changes:
 
           styles={buildStyles({
             // Rotation of path and trail, in number of turns (0-1)
-            rotation: 0.25,
+            rotation: 0,
 
             // Whether to use rounded or flat corners on the ends - can use 'butt' or 'round'
-            strokeLinecap: 'butt',
+            strokeLinecap: 'round',
 
             // Text size
-            textSize: '16px',
+            textSize: '40px',
 
             // How long animation takes to go from one percentage to another, in seconds
             pathTransitionDuration: 0.5,
@@ -45,12 +45,12 @@ export function ProgressBar ({
             // pathTransition: 'none',
 
             // Colors
-            pathColor: `rgba(62, 152, 199, ${percentage / 100})`,
+            // pathColor: `rgba(62, 152, 199, ${percentage / 100})`,
             textColor: '#f88',
             trailColor: '#d6d6d6',
             backgroundColor: '#3e98c7',
           })}
-          */
+      
       />
     </div>
   )

@@ -6,6 +6,7 @@ module.exports = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
+    './src/lib/fonts.ts'
 	],
   theme: {
     container: {
@@ -16,6 +17,13 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)'],
+        edu: ['var(--font-edu)'],
+        orbitron: ['var(--font-orbitron)'],
+        amatic: ['var(--font-amatic)'],
+        lugrasimo: ['var(--font-lugrasimo)'],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },

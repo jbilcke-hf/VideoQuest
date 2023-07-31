@@ -1,3 +1,4 @@
+import { amatic } from "@/lib/fonts"
 import { Game, Scene } from "./types"
 
 const actions = [
@@ -47,6 +48,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "Dungeon",
   type: "dungeon",
+  className: amatic.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [

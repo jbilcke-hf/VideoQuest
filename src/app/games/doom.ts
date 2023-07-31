@@ -1,3 +1,4 @@
+import { orbitron } from "@/lib/fonts"
 import { Game } from "./types"
 
 const initialSituation = [
@@ -16,6 +17,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "Doom",
   type: "doom",
+  className: orbitron.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [

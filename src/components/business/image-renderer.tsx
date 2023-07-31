@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { ImageSegment, RenderedScene } from "@/app/types"
 import { ProgressBar } from "../misc/progress"
+import { GameType } from "@/app/games/types"
 
 export const ImageRenderer = ({
   rendered: {
@@ -11,12 +12,14 @@ export const ImageRenderer = ({
   },
   onUserAction,
   onUserHover,
-  isLoading = false,
+  isLoading,
+  type,
 }: {
   rendered: RenderedScene
   onUserAction: (actionnable: string) => void
   onUserHover: (actionnable: string) => void
-  isLoading?: boolean
+  isLoading: boolean
+  type: GameType
 }) => {
   const timeoutRef = useRef<any>()
   const imgRef = useRef<HTMLImageElement | null>(null)
@@ -24,7 +27,8 @@ export const ImageRenderer = ({
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
   const [progressPercent, setProcessPercent] = useState(0)
-  const showLoaderRef = useRef(true)
+  const progressRef = useRef(0)
+  const isLoadingRef = useRef(isLoading)
 
   useEffect(() => {
     if (maskBase64) {
@@ -147,49 +151,30 @@ export const ImageRenderer = ({
     }
   };
 
-  useEffect(() => {
-    clearTimeout(timeoutRef.current)
-    let progress = 0
-    setProcessPercent(0)
-    // note: when everything is fine, it takes about 45 seconds to render a new scene
+  const updateProgressBar = () => {
+    const duration = 1000 // 1 sec
+    const frequency = 200 // 200ms
+    const nbUpdatesPerSec = duration / frequency // 5x per second
 
-    const computeProgress = async () => {
-      if (!showLoaderRef.current) {
-        console.log("Asked to hide the loader")
-        progress = 100
-        setProcessPercent(100)
-        clearTimeout(timeoutRef.current)
-        return
-      }
+    // normally it takes 45, and we will try to go below,
+    // but to be safe let's set the counter a 1 min
+    const nbSeconds = 45 // 1 min
+    const amountInPercent =  100 / (nbUpdatesPerSec * nbSeconds) // 0.333
 
-      // console.log("still loading..")
-
-      // console.log("updating progress")
-      progress = progress + 1
-      setProcessPercent(progress)
-
-      timeoutRef.current = setTimeout(() => {
-        computeProgress()
-      }, 1000)
-    }
-
-    computeProgress()
-  }, [assetUrl])
-
-  
-  useEffect(() => {
-    showLoaderRef.current = isLoading || !assetUrl
-  }, [isLoading, assetUrl])
-  
-
-  if (!assetUrl) {
-    return <div className="flex w-full pt-8 items-center justify-center text-center">
-      <ProgressBar
-        text="⌛"
-        progressPercentage={progressPercent}
-      />
-    </div>
+    progressRef.current = Math.min(100, progressRef.current + amountInPercent)
+    setProcessPercent(progressRef.current)
   }
+
+  useEffect(() => {
+    clearInterval(timeoutRef.current)
+    isLoadingRef.current = isLoading
+    progressRef.current = 0
+    setProcessPercent(0)
+    if (isLoading) {
+      timeoutRef.current = setInterval(updateProgressBar, 200)
+    }
+  }, [isLoading, assetUrl, type])
+
 
   /*
         <img
@@ -226,26 +211,37 @@ export const ImageRenderer = ({
   return (
     <div className={[
       "w-full py-8 px-2",
-      isLoading ? "animate-pulse" : ""
+      // isLoading ? "animate-pulse" : ""
     ].join(" ")
     }>
       <div className="relative w-full">
-        <img
-          src={assetUrl}
-          // src={"data:image/png;base64," + maskBase64}
-          ref={imgRef}
-          width="1024px"
-          height="512px"
-          className={
-            [
-             //  "absolute top-0 left-0",
-              actionnable && !isLoading ? "cursor-pointer" : ""
-            ].join(" ")
-          }
-          onMouseDown={(event) => handleMouseEvent(event, true)}
-          onMouseMove={handleMouseEvent}
+        {assetUrl
+          ? <img
+            src={assetUrl}
+            // src={"data:image/png;base64," + maskBase64}
+            ref={imgRef}
+            width="1024px"
+            height="512px"
+            className={
+              [
+              //  "absolute top-0 left-0",
+                actionnable && !isLoading ? "cursor-pointer" : ""
+              ].join(" ")
+            }
+            onMouseDown={(event) => handleMouseEvent(event, true)}
+            onMouseMove={handleMouseEvent}
+          />
+          : null}
+      </div>
+
+    {isLoading
+      ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8">
+        <ProgressBar
+          text="⌛"
+          progressPercentage={progressPercent}
         />
       </div>
+      : null}
     </div>
   )
 }

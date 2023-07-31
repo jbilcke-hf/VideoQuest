@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+
 
 import { ImageRenderer } from "@/components/business/image-renderer"
 
@@ -16,7 +17,7 @@ import {
 import { render } from "./render"
 
 import { RenderedScene } from "./types"
-import { GameType } from "./games/types"
+import { Game, GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
 import { getBackground } from "@/app/queries/getBackground"
 import { getDialogue } from "@/app/queries/getDialogue"
@@ -30,11 +31,15 @@ export default function Main() {
     maskBase64: "",
     segments:[]
   })
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
  
   const requestedGame = (searchParams.get('game') as GameType) || defaultGame
-  console.log("requestedGame:", requestedGame)
+  console.log("requestedGame: " + requestedGame)
   const gameRef = useRef<GameType>(requestedGame)
+  console.log("gameRef.current: " + gameRef.current)
+  const [game, setGame] = useState<Game>(getGame(gameRef.current))
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
   const [dialogue, setDialogue] = useState("")
@@ -46,12 +51,7 @@ export default function Main() {
     setLoading(true)
 
     await startTransition(async () => {
-
-      // console.log(`getting agent..`)
-      // note: we use a ref so that it can be changed in the background
-      const type = gameRef?.current
-      console.log("type:", type)
-      const game = getGame(type)
+      console.log("Rendering a scene for " + game.type)
 
       // console.log(`rendering scene..`)
       const newRendered = await render(
@@ -65,10 +65,9 @@ export default function Main() {
         ).slice(0, 6) // too many can slow us down it seems
       )
 
-      // detect if something changed in the background
-      if (type !== gameRef?.current) {
-        console.log("agent type changed! reloading scene")
-        setTimeout(() => { loadNextScene() }, 0)
+      // detect if type game type changed while we were busy
+      if (game.type !== gameRef?.current) {
+        console.log("game type changed! aborting..")
         return
       } 
 
@@ -130,23 +129,44 @@ export default function Main() {
 
   const clickables = Array.from(new Set(rendered.segments.map(s => s.label)).values())
 
+  const handleSelectGame = (newGameType: GameType) => {
+    gameRef.current = newGameType
+    setGame(getGame(newGameType))
+    setRendered({
+      assetUrl: "", 
+      error: "",
+      maskBase64: "",
+      segments:[]
+    })
+    setLoading(true)
+
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    current.set("game", newGameType)
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+
+    // for some reason, this doesn't work?!
+    router.replace(`${pathname}${query}`, { })
+    
+    // workaround.. but it is strange that router.replace doesn't work..
+    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    window.history.pushState({path: newurl}, '', newurl)
+  }
+
   return (
-    <div className="flex flex-col w-full pt-4">
+    <div
+      className={[
+        "flex flex-col w-full pt-4",
+        getGame(gameRef.current).className // apply the game theme
+      ].join(" ")}
+    >
       <div className="flex flex-col space-y-3 px-2">
         <div className="flex flex-row items-center space-x-3">
           <label className="flex">Select a story:</label>
           <Select
             defaultValue={gameRef.current}
-            onValueChange={(value) => {
-              gameRef.current = value as GameType
-              setRendered({
-                assetUrl: "", 
-                error: "",
-                maskBase64: "",
-                segments:[]
-              })
-            }}>
-            <SelectTrigger className="w-[180px]">
+            onValueChange={(value) => { handleSelectGame(value as GameType) }}>
+            <SelectTrigger className="text-xl w-[180px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
@@ -156,7 +176,7 @@ export default function Main() {
             </SelectContent>
           </Select>
         </div>
-        <p className="text-xl">This experimental demo uses shared ressources: each scene may take more than 45s to load.</p>
+        <p className="text-xl">A stable diffusion exploration game. Click on an item to explore a new scene!</p>
         <div className="flex flex-row">
           <div className="text-xl mr-2">🔎 Clickable items:</div>
           {clickables.map((clickable, i) => 
@@ -172,6 +192,7 @@ export default function Main() {
         onUserAction={handleUserAction}
         onUserHover={setHoveredActionnable}
         isLoading={isLoading}
+        type={game.type}
       />
       <p className="text-xl">{dialogue}</p>
     </div>

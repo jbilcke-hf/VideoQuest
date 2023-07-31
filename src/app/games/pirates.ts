@@ -1,3 +1,4 @@
+import { lugrasimo } from "@/lib/fonts"
 import { Game } from "./types"
 
 const actions = [
@@ -54,6 +55,7 @@ const initialSituation = [
 export const game: Game = {
   title: "Pirates",
   type: "pirates",
+  className: lugrasimo.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [
