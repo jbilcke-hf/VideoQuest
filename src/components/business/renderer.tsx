@@ -213,12 +213,12 @@ export const Renderer = ({
 
   return (
     <div className={[
-      "w-full py-8 px-2",
+      "w-full py-8",
       // isLoading ? "animate-pulse" : ""
     ].join(" ")
     }>
       <div className="relative w-[1024px] h-[512px] border-2 border-gray-50 rounded-xl overflow-hidden">
-        {assetUrl === null ?
+        {!assetUrl ?
           null
         : engine.type === "video"
           ? <video

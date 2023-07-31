@@ -62,7 +62,10 @@ export const game: Game = {
     // this prompt is beautiful:
     // screenshot from an adventure videogame, inside the hold of a pirate ship, with a pirate chest in the center, at sunset, beautiful, award winning, unreal engine, intricate details
       `screenshot from an adventure videogame`,
-      situation || initialSituation,
+      `pirate themed`,
       `unreal engine`,
+      `pixar style`,
+      `goofy and comedical`,
+      situation || initialSituation,
     ],
 }

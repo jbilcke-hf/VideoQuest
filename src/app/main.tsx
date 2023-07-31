@@ -58,16 +58,18 @@ export default function Main() {
       console.log("Rendering a scene for " + game.type)
 
       // console.log(`rendering scene..`)
-      const newRendered = await render(
+      const newRendered = await render({
+        engine,
+        
         // SCENE PROMPT
-        game.getScenePrompt(nextSituation).join(", "),
+        prompt: game.getScenePrompt(nextSituation).join(", "),
 
         // ACTIONNABLES
-        (Array.isArray(nextActionnables) && nextActionnables.length
+        actionnables: (Array.isArray(nextActionnables) && nextActionnables.length
           ? nextActionnables
           : game.initialActionnables
         ).slice(0, 6) // too many can slow us down it seems
-      )
+      })
 
       // detect if type game type changed while we were busy
       if (game?.type !== gameRef?.current) {
@@ -153,8 +155,11 @@ export default function Main() {
     router.replace(`${pathname}${query}`, { })
     
     // workaround.. but it is strange that router.replace doesn't work..
-    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
-    window.history.pushState({path: newurl}, '', newurl)
+    //let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    //window.history.pushState({path: newurl}, '', newurl)
+
+    // actually we don't handle partial reload very well, so let's reload the whole page
+    window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
 
@@ -170,16 +175,19 @@ export default function Main() {
     router.replace(`${pathname}${query}`, { })
     
     // workaround.. but it is strange that router.replace doesn't work..
-    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
-    window.history.pushState({path: newurl}, '', newurl)
+    // let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    // window.history.pushState({path: newurl}, '', newurl)
+
+    // actually we don't handle partial reload very well, so let's reload the whole page
+    window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
   return (
     <div
-      className="flex flex-col w-full"
+      className="flex flex-col w-full max-w-5xl"
     >
       <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 bg-gray-800">
-      <div className="flex flex-row items-center space-x-3 font-mono">
+        <div className="flex flex-row items-center space-x-3 font-mono">
           <label className="flex text-sm">Select a story:</label>
           <Select
             defaultValue={gameRef.current}
@@ -210,6 +218,7 @@ export default function Main() {
           </Select>
         </div>
       </div>
+
       <div className={[
         "flex flex-col w-full pt-4 space-y-3 px-2",
         getGame(gameRef.current).className // apply the game theme
@@ -223,17 +232,17 @@ export default function Main() {
             {i < (clickables.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <p className="text-xl font-normal">You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
+        <p className="text-xl">You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
+        <Renderer
+          rendered={rendered}
+          onUserAction={handleUserAction}
+          onUserHover={setHoveredActionnable}
+          isLoading={isLoading}
+          game={game}
+          engine={engine}
+        />
+        <p className="text-xl">{dialogue}</p>
       </div>
-      <Renderer
-        rendered={rendered}
-        onUserAction={handleUserAction}
-        onUserHover={setHoveredActionnable}
-        isLoading={isLoading}
-        game={game}
-        engine={engine}
-      />
-      <p className="text-xl">{dialogue}</p>
     </div>
   )
 }

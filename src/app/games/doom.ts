@@ -22,8 +22,11 @@ export const game: Game = {
   initialActionnables,
   getScenePrompt: (situation?: string) => [
     `Screenshot from Doom`,
+    `first person`,
+    `shooter game`,
+    `science fiction`,
+    `unreal engine`,
     situation || initialSituation,
-    `first person, beautiful, unreal engine`
   ]
 }
 

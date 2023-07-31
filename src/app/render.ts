@@ -3,6 +3,7 @@
 import Gorgon from "@gorgonjs/gorgon"
 
 import { RenderedScene } from "./types"
+import { Engine, EngineType } from "./engines"
 
 // note: there is no / at the end in the variable
 // so we have to add it ourselves if needed
@@ -11,8 +12,29 @@ const apiUrl = process.env.RENDERING_ENGINE_API
 
 const cacheDurationInSec = 30 * 60 // 30 minutes
 
-export async function render(prompt: string, actionnables: string[] = []) {
-  return await Gorgon.get(`render/${JSON.stringify(prompt, actionnables)}`, async () => {
+export async function render({
+  prompt,
+  actionnables = [],
+  engine,
+}: {
+  prompt: string
+  actionnables: string[]
+  engine: Engine
+}) {
+  if (!prompt) {
+    console.error(`cannot call the rendering API without a prompt, aborting..`)
+    throw new Error(`cannot call the rendering API without a prompt, aborting..`)
+  }
+  if (!Array.isArray(actionnables) || !actionnables.length) {
+    console.error(`cannot call the rendering API without actionnables, aborting..`)
+    throw new Error(`cannot call the rendering API without actionnables, aborting..`)
+  }
+
+  const nbFrames = engine.type === "video" ? 8 : 1
+
+  const cacheKey = `render/${JSON.stringify({ prompt, actionnables, nbFrames, type: engine.type })}`
+
+  return await Gorgon.get(cacheKey, async () => {
     let defaulResult: RenderedScene = {
       assetUrl: "",
       maskBase64: "",
@@ -32,7 +54,7 @@ export async function render(prompt: string, actionnables: string[] = []) {
         body: JSON.stringify({
           prompt,
           // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
-          nbFrames: 1, // when nbFrames is 1, we will only generate static images
+          nbFrames, // when nbFrames is 1, we will only generate static images
           nbSteps: 20,
           actionnables,
           segmentation: "firstframe", // one day we will remove this param, to make it automatic
@@ -57,6 +79,7 @@ export async function render(prompt: string, actionnables: string[] = []) {
       return response
     } catch (err) {
       console.error(err)
+      Gorgon.clear(cacheKey)
       return defaulResult
     }
   }, cacheDurationInSec * 1000)

@@ -1,6 +1,5 @@
-import { FontName } from "@/lib/fonts"
 
-export type GameType = 'pirates' | 'city' | 'dungeon' | 'doom'
+export type GameType = "pirates" | "city" | "dungeon" | "doom" | "vernian" | "enchanters"
 
 export interface Scene {
   actionnables: string[]

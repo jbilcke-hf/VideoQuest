@@ -1,5 +1,5 @@
 import { amatic } from "@/lib/fonts"
-import { Game, Scene } from "./types"
+import { Game } from "./types"
 
 const actions = [
   "not moving",
@@ -52,10 +52,11 @@ export const game: Game = {
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [
-    `screenshot from an adventure videogame`,
+    `screenshot from adventure videogame`,
     // `first-person footage`,
-    situation || initialSituation,
-    `medieval`,
+    `medieval dungeon`,
+    `adventure`,
     `unreal engine`,
+    situation || initialSituation,
   ]
 }

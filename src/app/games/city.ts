@@ -49,10 +49,12 @@ export const game: Game = {
   initialActionnables,
   getScenePrompt: (situation?: string) => [
     `isometrical bird view of 3D rendered city`,
-    situation || initialSituation,
     `game screenshot`,
+    `strategy game`,
+    `simulator`,
     `isometric`,
     `unreal engine`,
     `high res`,
+    situation || initialSituation,
   ]
 }
