@@ -22,6 +22,8 @@ module.exports = {
         edu: ['var(--font-edu)'],
         orbitron: ['var(--font-orbitron)'],
         amatic: ['var(--font-amatic)'],
+        macondo: ['var(--font-macondo)'],
+        imfell: ['var(--font-imfell)'],  
         lugrasimo: ['var(--font-lugrasimo)'],
       },
       keyframes: {

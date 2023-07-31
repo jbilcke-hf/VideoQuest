@@ -60,7 +60,7 @@ export default function Main() {
       // console.log(`rendering scene..`)
       const newRendered = await render({
         engine,
-        
+
         // SCENE PROMPT
         prompt: game.getScenePrompt(nextSituation).join(", "),
 
@@ -212,7 +212,7 @@ export default function Main() {
             </SelectTrigger>
             <SelectContent>
               {Object.entries(engines).map(([key, engine]) =>
-              <SelectItem key={key} value={key}>{engine.label} ({engine.modelName})</SelectItem>
+              <SelectItem key={key} value={key} disabled={key === "video"}>{engine.label} ({engine.modelName})</SelectItem>
               )}
             </SelectContent>
           </Select>
