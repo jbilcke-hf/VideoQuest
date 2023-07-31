@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react"
 
 import { ImageSegment, RenderedScene } from "@/app/types"
 import { ProgressBar } from "../misc/progress"
-import { GameType } from "@/app/games/types"
+import { Game } from "@/app/games/types"
+import { Engine, EngineType } from "@/app/engines"
 
-export const ImageRenderer = ({
+export const Renderer = ({
   rendered: {
     assetUrl = "",
     maskBase64 = "",
@@ -13,16 +14,18 @@ export const ImageRenderer = ({
   onUserAction,
   onUserHover,
   isLoading,
-  type,
+  game,
+  engine,
 }: {
   rendered: RenderedScene
   onUserAction: (actionnable: string) => void
   onUserHover: (actionnable: string) => void
   isLoading: boolean
-  type: GameType
+  game: Game
+  engine: Engine
 }) => {
   const timeoutRef = useRef<any>()
-  const imgRef = useRef<HTMLImageElement | null>(null)
+  const imgRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
@@ -158,7 +161,7 @@ export const ImageRenderer = ({
 
     // normally it takes 45, and we will try to go below,
     // but to be safe let's set the counter a 1 min
-    const nbSeconds = 45 // 1 min
+    const nbSeconds = 32 // 1 min
     const amountInPercent =  100 / (nbUpdatesPerSec * nbSeconds) // 0.333
 
     progressRef.current = Math.min(100, progressRef.current + amountInPercent)
@@ -173,7 +176,7 @@ export const ImageRenderer = ({
     if (isLoading) {
       timeoutRef.current = setInterval(updateProgressBar, 200)
     }
-  }, [isLoading, assetUrl, type])
+  }, [isLoading, assetUrl, engine?.type])
 
 
   /*
@@ -214,16 +217,22 @@ export const ImageRenderer = ({
       // isLoading ? "animate-pulse" : ""
     ].join(" ")
     }>
-      <div className="relative w-full">
-        {assetUrl
-          ? <img
+      <div className="relative w-[1024px] h-[512px] border-2 border-gray-50 rounded-xl overflow-hidden">
+        {assetUrl === null ?
+          null
+        : engine.type === "video"
+          ? <video
             src={assetUrl}
-            // src={"data:image/png;base64," + maskBase64}
-            ref={imgRef}
+            ref={imgRef as any}
+            muted
+            autoPlay
+            loop
             width="1024px"
             height="512px"
+
             className={
               [
+               //  "border-1 border-gray-50",
               //  "absolute top-0 left-0",
                 actionnable && !isLoading ? "cursor-pointer" : ""
               ].join(" ")
@@ -231,16 +240,30 @@ export const ImageRenderer = ({
             onMouseDown={(event) => handleMouseEvent(event, true)}
             onMouseMove={handleMouseEvent}
           />
-          : null}
+          : <img
+          src={assetUrl}
+          // src={"data:image/png;base64," + maskBase64}
+          ref={imgRef as any}
+          width="1024px"
+          height="512px"
+          className={
+            [
+            //  "absolute top-0 left-0",
+              actionnable && !isLoading ? "cursor-pointer" : ""
+            ].join(" ")
+          }
+          onMouseDown={(event) => handleMouseEvent(event, true)}
+          onMouseMove={handleMouseEvent}
+        />}
       </div>
 
-    {isLoading
+      {isLoading
       ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8">
-        <ProgressBar
-          text="⌛"
-          progressPercentage={progressPercent}
-        />
-      </div>
+          <ProgressBar
+            text="⌛"
+            progressPercentage={progressPercent}
+          />
+        </div>
       : null}
     </div>
   )

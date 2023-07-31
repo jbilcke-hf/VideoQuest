@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 
-import { ImageRenderer } from "@/components/business/image-renderer"
+import { Renderer } from "@/components/business/renderer"
 
 import {
   Select,
@@ -22,6 +22,7 @@ import { defaultGame, games, getGame } from "./games"
 import { getBackground } from "@/app/queries/getBackground"
 import { getDialogue } from "@/app/queries/getDialogue"
 import { getActionnables } from "@/app/queries/getActionnables"
+import { Engine, EngineType, defaultEngine, engines, getEngine } from "./engines"
 
 export default function Main() {
   const [isPending, startTransition] = useTransition()
@@ -36,10 +37,13 @@ export default function Main() {
   const searchParams = useSearchParams()
  
   const requestedGame = (searchParams.get('game') as GameType) || defaultGame
-  console.log("requestedGame: " + requestedGame)
   const gameRef = useRef<GameType>(requestedGame)
-  console.log("gameRef.current: " + gameRef.current)
   const [game, setGame] = useState<Game>(getGame(gameRef.current))
+
+  const requestedEngine = (searchParams.get('engine') as EngineType) || defaultEngine
+  // const engineRef = useRef<EngineType>(requestedEngine)
+  const [engine, setEngine] = useState<Engine>(getEngine(requestedEngine))
+
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
   const [dialogue, setDialogue] = useState("")
@@ -66,7 +70,7 @@ export default function Main() {
       )
 
       // detect if type game type changed while we were busy
-      if (game.type !== gameRef?.current) {
+      if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
         return
       } 
@@ -153,21 +157,35 @@ export default function Main() {
     window.history.pushState({path: newurl}, '', newurl)
   }
 
+
+  const handleSelectEngine = (newEngine: EngineType) => {
+    setEngine(getEngine(newEngine))
+
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    current.set("engine", newEngine)
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+
+    // for some reason, this doesn't work?!
+    router.replace(`${pathname}${query}`, { })
+    
+    // workaround.. but it is strange that router.replace doesn't work..
+    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    window.history.pushState({path: newurl}, '', newurl)
+  }
+
   return (
     <div
-      className={[
-        "flex flex-col w-full pt-4",
-        getGame(gameRef.current).className // apply the game theme
-      ].join(" ")}
+      className="flex flex-col w-full"
     >
-      <div className="flex flex-col space-y-3 px-2">
-        <div className="flex flex-row items-center space-x-3">
-          <label className="flex">Select a story:</label>
+      <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 bg-gray-800">
+      <div className="flex flex-row items-center space-x-3 font-mono">
+          <label className="flex text-sm">Select a story:</label>
           <Select
             defaultValue={gameRef.current}
             onValueChange={(value) => { handleSelectGame(value as GameType) }}>
-            <SelectTrigger className="text-xl w-[180px]">
-              <SelectValue placeholder="Type" />
+            <SelectTrigger className="w-[180px]">
+              <SelectValue className="text-sm" placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(games).map(([key, game]) =>
@@ -176,23 +194,44 @@ export default function Main() {
             </SelectContent>
           </Select>
         </div>
+        <div className="flex flex-row items-center space-x-3 font-mono">
+          <label className="flex text-sm">Rendering engine:</label>
+          <Select
+            defaultValue={engine.type}
+            onValueChange={(value) => { handleSelectEngine(value as EngineType) }}>
+            <SelectTrigger className="w-[300px]">
+              <SelectValue className="text-sm" placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(engines).map(([key, engine]) =>
+              <SelectItem key={key} value={key}>{engine.label} ({engine.modelName})</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className={[
+        "flex flex-col w-full pt-4 space-y-3 px-2",
+        getGame(gameRef.current).className // apply the game theme
+      ].join(" ")}>
         <p className="text-xl">A stable diffusion exploration game. Click on an item to explore a new scene!</p>
         <div className="flex flex-row">
           <div className="text-xl mr-2">🔎 Clickable items:</div>
           {clickables.map((clickable, i) => 
           <div key={i} className="flex flex-row text-xl mr-2">
             <div className="">{clickable}</div>
-            {i < (rendered.segments.length - 1) ? <div>,</div> : null}
+            {i < (clickables.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
         <p className="text-xl font-normal">You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
       </div>
-      <ImageRenderer
+      <Renderer
         rendered={rendered}
         onUserAction={handleUserAction}
         onUserHover={setHoveredActionnable}
         isLoading={isLoading}
-        type={game.type}
+        game={game}
+        engine={engine}
       />
       <p className="text-xl">{dialogue}</p>
     </div>
