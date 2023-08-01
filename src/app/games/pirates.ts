@@ -55,6 +55,7 @@ const initialSituation = [
 export const game: Game = {
   title: "Pirates",
   type: "pirates",
+  engine: "cartesian_image",
   className: lugrasimo.className,
   initialSituation,
   initialActionnables,

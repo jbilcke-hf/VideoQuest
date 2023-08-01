@@ -2,7 +2,7 @@ import { macondo } from "@/lib/fonts"
 import { Game } from "./types"
 
 const initialSituation = [
-  `looking at a beautiful medieval castle on a lake, with a metallic gate, during golden house, surrounded by mountain, with a flying dragon visible afar`,
+  `looking at a beautiful medieval castle on a lake, with a metallic gate, during golden hour, surrounded by mountain, with a flying dragon visible afar`,
 ].join(", ")
 
 const initialActionnables = [
@@ -18,6 +18,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "Enchanters",
   type: "enchanters",
+  engine: "spherical_image",
   className: macondo.className,
   initialSituation,
   initialActionnables,

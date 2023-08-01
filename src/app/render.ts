@@ -9,10 +9,9 @@ import { Engine, EngineType } from "./engines"
 // so we have to add it ourselves if needed
 const apiUrl = process.env.RENDERING_ENGINE_API
 
-
 const cacheDurationInSec = 30 * 60 // 30 minutes
 
-export async function render({
+export async function newRender({
   prompt,
   actionnables = [],
   engine,
@@ -30,20 +29,39 @@ export async function render({
     throw new Error(`cannot call the rendering API without actionnables, aborting..`)
   }
 
-  const nbFrames = engine.type === "video" ? 8 : 1
+  const nbFrames = engine.type === "cartesian_video" ? 8 : 1
 
   const cacheKey = `render/${JSON.stringify({ prompt, actionnables, nbFrames, type: engine.type })}`
 
-  return await Gorgon.get(cacheKey, async () => {
+  // return await Gorgon.get(cacheKey, async () => {
+
     let defaulResult: RenderedScene = {
+      renderId: "",
+      status: "error",
       assetUrl: "",
       maskBase64: "",
-      error: "",
+      error: "failed to fetch the data",
       segments: []
     }
 
     try {
-      console.log(`calling ${apiUrl}/render with prompt: ${prompt}`)
+      // console.log(`calling POST ${apiUrl}/render with prompt: ${prompt}`)
+
+      const isForVideo = nbFrames > 1
+
+  
+      console.log("REQUEST:", JSON.stringify({
+        prompt,
+        // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
+        nbFrames, // when nbFrames is 1, we will only generate static images
+        nbSteps: isForVideo ? 20 : 30, // 20 = fast, 30 = better, 50 = best
+        actionnables,
+        segmentation: "firstframe", // one day we will remove this param, to make it automatic
+        width: isForVideo ? 576 : 1024,
+        height: isForVideo ? 320 : 512,
+      }))
+    
+
       const res = await fetch(`${apiUrl}/render`, {
         method: "POST",
         headers: {
@@ -55,9 +73,11 @@ export async function render({
           prompt,
           // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
           nbFrames, // when nbFrames is 1, we will only generate static images
-          nbSteps: 20,
+          nbSteps: isForVideo ? 12 : 30, // 20 = fast, 30 = better, 50 = best
           actionnables,
           segmentation: "firstframe", // one day we will remove this param, to make it automatic
+          width: isForVideo ? 576 : 1024,
+          height: isForVideo ? 320 : 512,
         }),
         cache: 'no-store',
       // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
@@ -79,8 +99,60 @@ export async function render({
       return response
     } catch (err) {
       console.error(err)
-      Gorgon.clear(cacheKey)
+      // Gorgon.clear(cacheKey)
       return defaulResult
     }
-  }, cacheDurationInSec * 1000)
+
+  // }, cacheDurationInSec * 1000)
+}
+
+export async function getRender(renderId: string) {
+  if (!renderId) {
+    console.error(`cannot call the rendering API without a renderId, aborting..`)
+    throw new Error(`cannot call the rendering API without a renderId, aborting..`)
+  }
+
+  let defaulResult: RenderedScene = {
+    renderId: "",
+    status: "error",
+    assetUrl: "",
+    maskBase64: "",
+    error: "failed to fetch the data",
+    segments: []
+  }
+
+  try {
+    console.log(`calling GET ${apiUrl}/render with renderId: ${renderId}`)
+    const res = await fetch(`${apiUrl}/render/${renderId}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
+      },
+      cache: 'no-store',
+    // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
+    // next: { revalidate: 1 }
+    })
+
+    // console.log("res:", res)
+    // The return value is *not* serialized
+    // You can return Date, Map, Set, etc.
+    
+    // Recommendation: handle errors
+    if (res.status !== 200) {
+      // This will activate the closest `error.js` Error Boundary
+      throw new Error('Failed to fetch data')
+    }
+    
+    const response = (await res.json()) as RenderedScene
+    // console.log("response:", response)
+    return response
+  } catch (err) {
+    console.error(err)
+    // Gorgon.clear(cacheKey)
+    return defaulResult
+  }
+
+  // }, cacheDurationInSec * 1000)
 }

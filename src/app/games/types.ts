@@ -1,3 +1,4 @@
+import { EngineType } from "../engines"
 
 export type GameType = "pirates" | "city" | "dungeon" | "doom" | "vernian" | "enchanters"
 
@@ -9,6 +10,7 @@ export interface Scene {
 export interface Game {
   title: string
   type: GameType
+  engine: EngineType
   className: string
   initialSituation: string
   initialActionnables: string[]

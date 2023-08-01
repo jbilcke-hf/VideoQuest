@@ -4,6 +4,10 @@ import { ImageSegment, RenderedScene } from "@/app/types"
 import { ProgressBar } from "../misc/progress"
 import { Game } from "@/app/games/types"
 import { Engine, EngineType } from "@/app/engines"
+import { CartesianImage } from "./cartesian-image"
+import { SceneEventHandler, SceneEventType } from "./types"
+import { CartesianVideo } from "./cartesian-video"
+import { SphericalImage } from "./spherical-image"
 
 export const Renderer = ({
   rendered: {
@@ -106,26 +110,22 @@ export const Renderer = ({
     return closestSegment;
   }
 
-  const handleMouseEvent = async (event: React.MouseEvent, isClickEvent: boolean = false) => {
+  const handleMouseEvent: SceneEventHandler = async (type: SceneEventType, x: number, y: number) => {
     if (!contextRef.current) return; // Return early if mask image has not been loaded yet
   
     if (isLoading) {
       // we ignore all user interactions
-      return false
+      return
     }
 
     // sometimes we generate an image, but the segmentation fails
     // so if we click anywhere bug there are no segments,
     // we inform the rest of the app by passing nothing
-    if (isClickEvent && segments.length == 0) {
+    if (type === "click" && segments.length == 0) {
       onUserAction("nothing, to trigger a scene reload")
       return
     }
 
-    const boundingRect = imgRef.current!.getBoundingClientRect();
-    const x = event.clientX - boundingRect.left;
-    const y = event.clientY - boundingRect.top;
-  
     const newSegment = getSegmentAt(x, y)
 
     if (actionnable !== newSegment.label) {
@@ -139,7 +139,7 @@ export const Renderer = ({
       setActionnable(newSegment.label)
     }
 
-    if (isClickEvent) {
+    if (type === "click") {
       if (!newSegment.label) {
         return
       }
@@ -212,49 +212,43 @@ export const Renderer = ({
         */
 
   return (
-    <div className={[
-      "w-full py-8",
-      // isLoading ? "animate-pulse" : ""
-    ].join(" ")
-    }>
-      <div className="relative w-[1024px] h-[512px] border-2 border-gray-50 rounded-xl overflow-hidden">
+    <div className="w-full py-8">
+      <div
+        className={[
+          "relative w-full h-[800px] border-2 border-gray-50 rounded-xl overflow-hidden",
+          isLoading
+            ? "cursor-wait"
+            : actionnable
+            ? "cursor-pointer"
+            : ""
+          ].join(" ")}>
         {!assetUrl ?
           null
-        : engine.type === "video"
-          ? <video
-            src={assetUrl}
-            ref={imgRef as any}
-            muted
-            autoPlay
-            loop
-            width="1024px"
-            height="512px"
+        : engine.type === "cartesian_video"
+          ? <CartesianVideo
+              src={assetUrl}
+              ref={imgRef as any}
+              width="1024px"
+              height="512px"
+              onEvent={handleMouseEvent}
+            />
+          : engine.type === "spherical_image"
+          ? <SphericalImage
+              src={assetUrl}
+              ref={imgRef as any}
+              width="1024px"
+              height="512px"
+              onEvent={handleMouseEvent}
+            />
+          : <CartesianImage
+              src={assetUrl}
+              ref={imgRef as any}
+              width="1024px"
+              height="512px"
+              onEvent={handleMouseEvent}
+            />
+        }
 
-            className={
-              [
-               //  "border-1 border-gray-50",
-              //  "absolute top-0 left-0",
-                actionnable && !isLoading ? "cursor-pointer" : ""
-              ].join(" ")
-            }
-            onMouseDown={(event) => handleMouseEvent(event, true)}
-            onMouseMove={handleMouseEvent}
-          />
-          : <img
-          src={assetUrl}
-          // src={"data:image/png;base64," + maskBase64}
-          ref={imgRef as any}
-          width="1024px"
-          height="512px"
-          className={
-            [
-            //  "absolute top-0 left-0",
-              actionnable && !isLoading ? "cursor-pointer" : ""
-            ].join(" ")
-          }
-          onMouseDown={(event) => handleMouseEvent(event, true)}
-          onMouseMove={handleMouseEvent}
-        />}
       </div>
 
       {isLoading

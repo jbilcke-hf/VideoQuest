@@ -1,3 +1,5 @@
+export type ProjectionMode = 'cartesian' | 'spherical'
+
 export interface RenderRequest {
   prompt: string
 
@@ -21,6 +23,11 @@ export interface RenderRequest {
   nbSteps: number // min: 1, max: 50
 
   seed: number
+
+  width: number // fixed at 1024 for now
+  height: number // fixed at 512 for now
+
+  projection: ProjectionMode
 }
 
 export interface ImageSegment {
@@ -31,7 +38,10 @@ export interface ImageSegment {
   score: number 
 }
 
+export type RenderedSceneStatus = 'pending' | 'completed' | 'error'
 export interface RenderedScene {
+  renderId: string
+  status: RenderedSceneStatus
   assetUrl: string 
   error: string
   maskBase64: string

@@ -48,6 +48,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "Dungeon",
   type: "dungeon",
+  engine: "cartesian_image",
   className: amatic.className,
   initialSituation,
   initialActionnables,

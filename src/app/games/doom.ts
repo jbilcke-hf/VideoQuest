@@ -17,6 +17,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "Doom",
   type: "doom",
+  engine: "cartesian_image",
   className: orbitron.className,
   initialSituation,
   initialActionnables,

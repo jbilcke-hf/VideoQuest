@@ -19,17 +19,18 @@ const initialActionnables = [
 export const game: Game = {
   title: "Vernian",
   type: "vernian",
+  engine: "spherical_image",
   className: imfell.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [
     `Screenshot from a videogame`,
-    `steam punk`,
+    `steam punk decor`,
     `jules verne architecture and design`,
     `mysterious machines and mechanisms`,
     `first person`,
-    `unreal engine`,
     situation || initialSituation,
+    `unreal engine`,
   ]
 }
 

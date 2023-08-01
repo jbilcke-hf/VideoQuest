@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { render } from "./render"
+import { newRender, getRender } from "./render"
 
 import { RenderedScene } from "./types"
 import { Game, GameType } from "./games/types"
@@ -24,14 +24,18 @@ import { getDialogue } from "@/app/queries/getDialogue"
 import { getActionnables } from "@/app/queries/getActionnables"
 import { Engine, EngineType, defaultEngine, engines, getEngine } from "./engines"
 
+const getInitialRenderedScene = (): RenderedScene => ({
+  renderId: "",
+  status: "pending",
+  assetUrl: "", 
+  error: "",
+  maskBase64: "",
+  segments: []
+})
 export default function Main() {
   const [isPending, startTransition] = useTransition()
-  const [rendered, setRendered] = useState<RenderedScene>({
-    assetUrl: "", 
-    error: "",
-    maskBase64: "",
-    segments:[]
-  })
+  const [rendered, setRendered] = useState<RenderedScene>(getInitialRenderedScene())
+  const renderedRef = useRef<RenderedScene>()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -41,24 +45,22 @@ export default function Main() {
   const [game, setGame] = useState<Game>(getGame(gameRef.current))
 
   const requestedEngine = (searchParams.get('engine') as EngineType) || defaultEngine
-  // const engineRef = useRef<EngineType>(requestedEngine)
   const [engine, setEngine] = useState<Engine>(getEngine(requestedEngine))
 
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
   const [dialogue, setDialogue] = useState("")
   const [hoveredActionnable, setHoveredActionnable] = useState("")
-  const [isLoading, setLoading] = useState(true)
+
+  const loopRef = useRef<any>(null)
 
   const loadNextScene = async (nextSituation?: string, nextActionnables?: string[]) => {
-    // console.log(`update view..`)
-    setLoading(true)
-
+    
     await startTransition(async () => {
       console.log("Rendering a scene for " + game.type)
 
       // console.log(`rendering scene..`)
-      const newRendered = await render({
+      renderedRef.current = await newRender({
         engine,
 
         // SCENE PROMPT
@@ -71,30 +73,74 @@ export default function Main() {
         ).slice(0, 6) // too many can slow us down it seems
       })
 
+      console.log("got the first version of our scene!", renderedRef.current)
+
       // detect if type game type changed while we were busy
       if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
         return
-      } 
-
-      if (newRendered.assetUrl) {
-        // console.log(`got a new url: ${newRendered.assetUrl}`)
-        setScene(scene)
-
-        setRendered(newRendered)
-        setLoading(false)
       }
+
+      setScene(scene)
+
+      setRendered(renderedRef.current)
     })
   }
 
+  const checkRenderedLoop = async () => {
+    // console.log("checkRenderedLoop! rendered:", renderedRef.current)
+    clearTimeout(loopRef.current)
+    if (!renderedRef.current?.renderId || renderedRef.current?.status !== "pending") {
+      // console.log("let's try again in a moments")
+      loopRef.current = setTimeout(() => checkRenderedLoop(), 200)
+      return
+    } 
+
+    // console.log("checking rendering..")
+    await startTransition(async () => {
+      // console.log(`getting latest updated scene..`)
+      try {
+        if (!renderedRef.current?.renderId) {
+          throw new Error(`missing renderId`)
+        }
+
+      
+        // console.log(`calling getRender(${renderedRef.current.renderId})`)
+        const newRendered = await getRender(renderedRef.current.renderId)
+        // console.log(`got latest updated scene:`, renderedRef.current)
+
+        // detect if type game type changed while we were busy
+        if (game?.type !== gameRef?.current) {
+          console.log("game type changed! aborting..")
+          return
+        }
+
+    
+        const before = JSON.stringify(renderedRef.current)
+        const after = JSON.stringify(newRendered)
+
+        if (after !== before) {
+          console.log("updating scene..")
+          renderedRef.current = newRendered
+          setRendered(renderedRef.current)
+        }
+      } catch (err) {
+        console.error(err)
+      }
+
+      clearTimeout(loopRef.current)
+      loopRef.current = setTimeout(() => checkRenderedLoop(), 1000)
+    })
+  }
+    
   useEffect(() => {
     loadNextScene()
+    checkRenderedLoop()
   }, [])
 
   const handleUserAction = async (actionnable: string) => {
     console.log("user actionnable:", actionnable)
   
-    setLoading(true)
 
     // TODO: ask Llama2 what to do about it
     // we need a frame and some actionnables,
@@ -128,7 +174,6 @@ export default function Main() {
           // todo we could also use useEffect
       } catch (err) {
         console.error(`failed to get one of the mandatory entites: ${err}`)
-        setLoading(false)
       }
     })
   }
@@ -138,13 +183,16 @@ export default function Main() {
   const handleSelectGame = (newGameType: GameType) => {
     gameRef.current = newGameType
     setGame(getGame(newGameType))
+    /*
     setRendered({
+      renderId: "",
+      status: "pending",
       assetUrl: "", 
       error: "",
       maskBase64: "",
       segments:[]
     })
-    setLoading(true)
+    */
 
     const current = new URLSearchParams(Array.from(searchParams.entries()))
     current.set("game", newGameType)
@@ -186,7 +234,7 @@ export default function Main() {
     <div
       className="flex flex-col w-full max-w-5xl"
     >
-      <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 bg-gray-800">
+      <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 dark:border-gray-50 bg-gray-800 dark:bg-gray-800">
         <div className="flex flex-row items-center space-x-3 font-mono">
           <label className="flex text-sm">Select a story:</label>
           <Select
@@ -211,8 +259,10 @@ export default function Main() {
               <SelectValue className="text-sm" placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(engines).map(([key, engine]) =>
-              <SelectItem key={key} value={key} disabled={key === "video"}>{engine.label} ({engine.modelName})</SelectItem>
+              {Object.entries(engines)
+                .filter(([_, engine]) => engine.visible)
+                .map(([key, engine]) =>
+              <SelectItem key={key} value={key} disabled={!engine.enabled}>{engine.label} ({engine.modelName})</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -220,12 +270,17 @@ export default function Main() {
       </div>
 
       <div className={[
-        "flex flex-col w-full pt-4 space-y-3 px-2",
+        "flex flex-col w-full pt-4 space-y-3 px-2 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
         <p className="text-xl">A stable diffusion exploration game. Click on an item to explore a new scene!</p>
         <div className="flex flex-row">
-          <div className="text-xl mr-2">🔎 Clickable items:</div>
+          <div className="text-xl mr-2">
+            {rendered.segments.length
+              ? <span>🔎 Clickable items:</span>
+              : <span>⌛ Loading clickable items..</span>
+            }
+          </div>
           {clickables.map((clickable, i) => 
           <div key={i} className="flex flex-row text-xl mr-2">
             <div className="">{clickable}</div>
@@ -237,7 +292,7 @@ export default function Main() {
           rendered={rendered}
           onUserAction={handleUserAction}
           onUserHover={setHoveredActionnable}
-          isLoading={isLoading}
+          isLoading={rendered.status === "pending"}
           game={game}
           engine={engine}
         />

@@ -44,6 +44,7 @@ const initialActionnables = [
 export const game: Game = {
   title: "City",
   type: "city",
+  engine: "cartesian_image",
   className:  edu.className,
   initialSituation,
   initialActionnables,
