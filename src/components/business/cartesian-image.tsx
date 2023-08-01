@@ -45,3 +45,5 @@ export const CartesianImage = forwardRef(({
     />
   )
 })
+
+CartesianImage.displayName = "CartesianImage"

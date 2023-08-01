@@ -48,3 +48,5 @@ export const CartesianVideo = forwardRef(({
     />
   )
 })
+
+CartesianVideo.displayName = "CartesianVideo"

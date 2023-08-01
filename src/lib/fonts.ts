@@ -31,7 +31,8 @@ export const macondo = Macondo_Swash_Caps({
 export const imfell = IM_Fell_English_SC({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-imfell"
+  variable: "--font-imfell",
+  fallback: ["Serif"]
 })
 
 export const lugrasimo = localFont({

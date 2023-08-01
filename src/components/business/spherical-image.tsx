@@ -60,3 +60,5 @@ export const SphericalImage = forwardRef(({
     />
   )
 })
+
+SphericalImage.displayName = "SphericalImage"
