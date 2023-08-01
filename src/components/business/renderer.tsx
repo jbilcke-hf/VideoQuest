@@ -245,7 +245,7 @@ export const Renderer = ({
               onEvent={handleMouseEvent}
             />
           : <CartesianImage
-              src={maskUrl}
+              src={assetUrl}
               ref={imgRef as any}
               width="1024px"
               height="512px"
