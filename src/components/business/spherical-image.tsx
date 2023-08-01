@@ -1,19 +1,14 @@
 import { ForwardedRef, forwardRef } from "react"
 import { ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
-// import { CubemapAdapter } from "react-photo-sphere-viewer"
 
 import { SceneEventHandler } from "./types"
 
 export const SphericalImage = forwardRef(({
   src,
-  width,
-  height,
   onEvent,
   className,
 }: {
   src: string
-  width: number | string
-  height: number | string
   onEvent: SceneEventHandler
   className?: string
 }, ref: ForwardedRef<HTMLImageElement>) => {

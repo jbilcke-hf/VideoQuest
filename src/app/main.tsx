@@ -270,15 +270,14 @@ export default function Main() {
       </div>
 
       <div className={[
-        "flex flex-col w-full pt-4 space-y-3 px-2 text-gray-50 dark:text-gray-50",
+        "flex flex-col w-full pt-4 space-y-2 px-2 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
-        <p className="text-xl">A stable diffusion exploration game. Click on an item to explore a new scene!</p>
         <div className="flex flex-row">
           <div className="text-xl mr-2">
             {rendered.segments.length
-              ? <span>🔎 Clickable items:</span>
-              : <span>⌛ Loading clickable items..</span>
+              ? <span>🔎 Try to click on:</span>
+              : <span>⌛ Searching in the scene..</span>
             }
           </div>
           {clickables.map((clickable, i) => 

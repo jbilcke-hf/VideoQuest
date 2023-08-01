@@ -36,6 +36,7 @@ export const Renderer = ({
   const [progressPercent, setProcessPercent] = useState(0)
   const progressRef = useRef(0)
   const isLoadingRef = useRef(isLoading)
+  const maskUrl = `data:image/png;base64,${maskBase64}`
 
   useEffect(() => {
     if (maskBase64) {
@@ -212,10 +213,15 @@ export const Renderer = ({
         */
 
   return (
-    <div className="w-full py-8">
+    <div className="w-full pt-2">
       <div
         className={[
-          "relative w-full h-[800px] border-2 border-gray-50 rounded-xl overflow-hidden",
+          "relative border-2 border-gray-50 rounded-xl overflow-hidden",
+          engine.type === "cartesian_video"
+          || engine.type === "cartesian_image"
+            ? "w-[1024px] h-[512px]"
+            : "w-full h-[800px]",
+            
           isLoading
             ? "cursor-wait"
             : actionnable
@@ -236,12 +242,10 @@ export const Renderer = ({
           ? <SphericalImage
               src={assetUrl}
               ref={imgRef as any}
-              width="1024px"
-              height="512px"
               onEvent={handleMouseEvent}
             />
           : <CartesianImage
-              src={assetUrl}
+              src={maskUrl}
               ref={imgRef as any}
               width="1024px"
               height="512px"
