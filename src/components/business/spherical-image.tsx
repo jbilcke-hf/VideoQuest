@@ -1,10 +1,9 @@
-import { ForwardedRef, forwardRef } from "react"
 import { ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
 
 import { SceneEventHandler } from "./types"
 import { RenderedScene } from "@/app/types"
 
-export const SphericalImage = forwardRef(({
+export function SphericalImage({
   rendered,
   onEvent,
   className,
@@ -14,7 +13,7 @@ export const SphericalImage = forwardRef(({
   onEvent: SceneEventHandler
   className?: string
   debug?: boolean
-}, ref: ForwardedRef<HTMLImageElement>) => {
+}) {
 
   if (!rendered.assetUrl) {
     return null
@@ -31,6 +30,21 @@ export const SphericalImage = forwardRef(({
       width="100%"
 
       defaultZoomLvl={1}
+
+      overlay={rendered.maskUrl || undefined}
+      overlayOpacity={debug ? 0.5 : 0}
+
+      panoData={{
+        fullWidth: 1300,
+        fullHeight: 700,
+        croppedWidth: 1024,
+        croppedHeight: 512,
+        croppedX: 0,
+        croppedY: 120,
+        // poseHeading: 0, // 0 to 360
+         posePitch: 0, // -90 to 90
+        // poseRoll: 0, // -180 to 180
+      }}
 
       onClick={(data, instance) => {
         console.log("on click:")
@@ -59,6 +73,4 @@ export const SphericalImage = forwardRef(({
 
     />
   )
-})
-
-SphericalImage.displayName = "SphericalImage"
+}

@@ -27,7 +27,6 @@ export const Renderer = ({
   debug: boolean
 }) => {
   const timeoutRef = useRef<any>()
-  const viewRef = useRef<HTMLDivElement>()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
@@ -192,20 +191,17 @@ export const Renderer = ({
         {engine.type === "cartesian_video"
           ? <CartesianVideo
               rendered={rendered}
-              ref={viewRef as any}
               onEvent={handleMouseEvent}
               debug={debug}
             />
           : engine.type === "spherical_image"
           ? <SphericalImage
               rendered={rendered}
-              ref={viewRef as any}
               onEvent={handleMouseEvent}
               debug={debug}
             />
           : <CartesianImage
               rendered={rendered}
-              ref={viewRef as any}
               onEvent={handleMouseEvent}
               debug={debug}
             />

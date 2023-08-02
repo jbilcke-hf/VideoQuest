@@ -1,9 +1,9 @@
-import { ForwardedRef, forwardRef } from "react"
-
+import { useRef } from "react"
 import { SceneEventHandler } from "./types"
 import { RenderedScene } from "@/app/types"
+import { useImageDimension } from "@/lib/useImageDimension"
 
-export const CartesianImage = forwardRef(({
+export function CartesianImage({
   rendered,
   onEvent,
   className,
@@ -13,23 +13,36 @@ export const CartesianImage = forwardRef(({
   onEvent: SceneEventHandler
   className?: string
   debug?: boolean
-}, ref: ForwardedRef<HTMLDivElement>) => {
+}) {
 
-  const handleEvent = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, isClick: boolean) => {
+  const maskDimension = useImageDimension(rendered.maskUrl)
 
-    const element = ((ref as any)?.current) as HTMLDivElement
+  const ref = useRef<HTMLImageElement>(null)
+  const handleEvent = async (event: React.MouseEvent<HTMLImageElement, MouseEvent>, isClick: boolean) => {
 
-    if (!element) {
+    if (!ref.current) {
       console.log("element isn't ready")
       return
     }
 
-    const boundingRect = element.getBoundingClientRect()
-    const x = (event.clientX - boundingRect.left) * 1.03
-    const y = (event.clientY - boundingRect.top) //* 1.03
+    const boundingRect = ref.current.getBoundingClientRect()
+    // const x = (event.clientX - boundingRect.left) * 1.03
+    // const y = (event.clientY - boundingRect.top) //* 1.03
+
+    // those X and Y will be based on the current size of the container, which might be variable
+    const containerX = event.clientX - boundingRect.left
+    const containerY = event.clientY - boundingRect.top
+
+    // then we convert them to relative coordinates
+    const relativeX = containerX / boundingRect.width
+    const relativey = containerY / boundingRect.height
+
+    // finally, we convert back to coordinates within the input image
+    const imageX = relativeX * maskDimension.width
+    const imageY = relativey * maskDimension.height
 
     const eventType = isClick ? "click" : "hover"
-    onEvent(eventType, x, y)
+    onEvent(eventType, imageX, imageY)
   }
 
   if (!rendered.assetUrl) {
@@ -38,20 +51,18 @@ export const CartesianImage = forwardRef(({
   return (
     <div
       className={className}
-      onMouseUp={(event) => handleEvent(event, true)}
-      onMouseMove={(event) => handleEvent(event, false)}
     >
       <img
         src={rendered.assetUrl || undefined}
-        ref={ref as any}
+        ref={ref}
         className="absolute"
+        onMouseUp={(event) => handleEvent(event, true)}
+        onMouseMove={(event) => handleEvent(event, false)}
       />
       {debug && <img
         src={rendered.maskUrl || undefined}
-        className="absolute opacity-50"
+        className="absolute opacity-50 pointer-events-none"
       />}
     </div>
   )
-})
-
-CartesianImage.displayName = "CartesianImage"
+}
