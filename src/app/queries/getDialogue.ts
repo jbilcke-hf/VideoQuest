@@ -41,6 +41,7 @@ Here is the original scene in which the user was located at first, which will in
         basePrompt,
         `You must imagine a funny response to speak in reaction to what the player did, like in some old point and click video games.`,
         `Please limit yourself to only a 1 or 2 sentences, please.`,
+        `Also please don't say things like "Well, well, well", it is annoying.`
       ].filter(item => item).join("\n")
     },
     {

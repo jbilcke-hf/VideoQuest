@@ -54,7 +54,7 @@ export async function newRender({
         prompt,
         // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
         nbFrames, // when nbFrames is 1, we will only generate static images
-        nbSteps: isForVideo ? 20 : 30, // 20 = fast, 30 = better, 50 = best
+        nbSteps: isForVideo ? 25 : 35, // 20 = fast, 30 = better, 50 = best
         actionnables,
         segmentation: "firstframe", // one day we will remove this param, to make it automatic
         width: isForVideo ? 576 : 1024,
@@ -72,7 +72,7 @@ export async function newRender({
           prompt,
           // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
           nbFrames, // when nbFrames is 1, we will only generate static images
-          nbSteps: isForVideo ? 12 : 30, // 20 = fast, 30 = better, 50 = best
+          nbSteps: isForVideo ? 25 : 35, // 20 = fast, 30 = better, 50 = best
           actionnables,
           segmentation: "firstframe", // one day we will remove this param, to make it automatic
           width: isForVideo ? 576 : 1024,

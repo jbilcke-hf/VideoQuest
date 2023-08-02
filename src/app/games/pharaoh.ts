@@ -2,25 +2,24 @@ import { macondo } from "@/lib/fonts"
 import { Game } from "./types"
 
 const initialSituation = [
-  `looking at a beautiful medieval castle on a lake, with a metallic gate, during golden hour, surrounded by mountain, with a flying dragon visible afar`,
+  `looking at a beautiful pyramid, ancient egypt, during golden hour, surrounded by sand dunes, near the Nile`,
 ].join(", ")
 
 const initialActionnables = [
-  "trees",
-  "dragon",
-  "castle",
-  "gate",
+  "pyramid",
+  "person",
   "rocks",
-  "lake",
-  "roof",
+  "dune",
+  "sceptre",
+  "tree",
+  "river",
   "boat",
-  "mountain",
-  "sky"
+  "crocodile"
 ]
 
 export const game: Game = {
-  title: "Enchanters",
-  type: "enchanters",
+  title: "Pharaoh",
+  type: "pharaoh",
   engine: "spherical_image",
   className: macondo.className,
   initialSituation,
@@ -28,7 +27,7 @@ export const game: Game = {
   getScenePrompt: (situation?: string) => [
     `Screenshot from a videogame`,
     `unreal engine`,
-    `magical wizard world`, 
+    `ancient egypt`, 
     `first person`,
     situation || initialSituation,
   ]

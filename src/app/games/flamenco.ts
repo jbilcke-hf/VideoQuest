@@ -2,34 +2,39 @@ import { macondo } from "@/lib/fonts"
 import { Game } from "./types"
 
 const initialSituation = [
-  `looking at a beautiful medieval castle on a lake, with a metallic gate, during golden hour, surrounded by mountain, with a flying dragon visible afar`,
+  `beautiful view of an art deco building in new york`,
+  `looking up`,
+  `entrance desk`,
+  `pigeon character`,
+  `day of the dead makeup`,
+  `artdeco bridge`,
 ].join(", ")
 
 const initialActionnables = [
-  "trees",
-  "dragon",
-  "castle",
+  "pigeon",
+  "face",
+  "person",
+  "building",
+  "light",
+  "decoration",
+  "box",
+  "desk",
   "gate",
-  "rocks",
-  "lake",
-  "roof",
-  "boat",
-  "mountain",
-  "sky"
+  "door"
 ]
 
 export const game: Game = {
-  title: "Enchanters",
-  type: "enchanters",
+  title: "Sad Flamenco",
+  type: "flamenco",
   engine: "spherical_image",
   className: macondo.className,
   initialSituation,
   initialActionnables,
   getScenePrompt: (situation?: string) => [
-    `Screenshot from a videogame`,
+    `photo of an artdeco scene`,
+    `grimfandango screenshot`,
     `unreal engine`,
-    `magical wizard world`, 
-    `first person`,
+    `1920 mexico`,
     situation || initialSituation,
   ]
 }

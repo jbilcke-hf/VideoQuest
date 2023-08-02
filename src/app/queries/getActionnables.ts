@@ -77,8 +77,22 @@ export const getActionnables = async ({
         throw new Error("no actionnables")
       }
     } catch (err) {
-      console.log("failed to repair and recover a valid JSON!")
-      throw new Error("failed to parse the actionnables")
+      console.log("failed to repair and recover a valid JSON! Using a generic fallback..")
+
+      return [
+        "door",
+        "rock",
+        "window",
+        "table",
+        "ground",
+        "sky",
+        "box",
+        "tree",
+        "wall",
+        "floor"
+      ]
+      
+      // throw new Error("failed to parse the actionnables")
     }
   }
 

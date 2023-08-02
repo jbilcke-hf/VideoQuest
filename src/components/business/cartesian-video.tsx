@@ -44,11 +44,15 @@ export const CartesianVideo = forwardRef(({
       muted
       autoPlay
       loop
+      width="1024px"
+      height="512px"
       className="absolute"
     />
     {debug && <img
       src={rendered.maskUrl || undefined}
       className="absolute opacity-50"
+      width="1024px"
+      height="512px"
     />}
   </div>
   )

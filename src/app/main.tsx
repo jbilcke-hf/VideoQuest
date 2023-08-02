@@ -35,7 +35,7 @@ const getInitialRenderedScene = (): RenderedScene => ({
 export default function Main() {
   const [isPending, startTransition] = useTransition()
   const [rendered, setRendered] = useState<RenderedScene>(getInitialRenderedScene())
-  const renderedRef = useRef<RenderedScene>()
+  const historyRef = useRef<RenderedScene[]>([])
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -50,7 +50,7 @@ export default function Main() {
   const debug = (searchParams.get('debug') === "true")
 
   const [situation, setSituation] = useState("")
-  const [scene, setScene] = useState("")
+
   const [dialogue, setDialogue] = useState("")
   const [hoveredActionnable, setHoveredActionnable] = useState("")
 
@@ -59,14 +59,13 @@ export default function Main() {
 
   const loopRef = useRef<any>(null)
 
-
   const loadNextScene = async (nextSituation?: string, nextActionnables?: string[]) => {
     
     await startTransition(async () => {
       console.log("Rendering a scene for " + game.type)
 
       // console.log(`rendering scene..`)
-      renderedRef.current = await newRender({
+      const newRendered = await newRender({
         engine,
 
         // SCENE PROMPT
@@ -79,7 +78,7 @@ export default function Main() {
         ).slice(0, 10) // too many can slow us down it seems
       })
 
-      console.log("got the first version of our scene!", renderedRef.current)
+      console.log("got the first version of our scene!", newRendered)
 
       // detect if type game type changed while we were busy
       if (game?.type !== gameRef?.current) {
@@ -87,16 +86,17 @@ export default function Main() {
         return
       }
 
-      setScene(scene)
-
-      setRendered(renderedRef.current)
+      historyRef.current.unshift(newRendered)
+      setRendered(newRendered)
     })
   }
 
   const checkRenderedLoop = async () => {
     // console.log("checkRenderedLoop! rendered:", renderedRef.current)
     clearTimeout(loopRef.current)
-    if (!renderedRef.current?.renderId || renderedRef.current?.status !== "pending") {
+  
+    if (!historyRef.current[0]?.renderId || historyRef.current[0]?.status !== "pending") {
+
       // console.log("let's try again in a moments")
       loopRef.current = setTimeout(() => checkRenderedLoop(), 200)
       return
@@ -106,13 +106,13 @@ export default function Main() {
     await startTransition(async () => {
       // console.log(`getting latest updated scene..`)
       try {
-        if (!renderedRef.current?.renderId) {
+        if (!historyRef.current[0]?.renderId) {
           throw new Error(`missing renderId`)
         }
 
       
         // console.log(`calling getRender(${renderedRef.current.renderId})`)
-        const newRendered = await getRender(renderedRef.current.renderId)
+        const newRendered = await getRender(historyRef.current[0]?.renderId)
         // console.log(`got latest updated scene:`, renderedRef.current)
 
         // detect if type game type changed while we were busy
@@ -122,13 +122,13 @@ export default function Main() {
         }
 
     
-        const before = JSON.stringify(renderedRef.current)
+        const before = JSON.stringify(historyRef.current[0])
         const after = JSON.stringify(newRendered)
 
         if (after !== before) {
           console.log("updating scene..")
-          renderedRef.current = newRendered
-          setRendered(renderedRef.current)
+          historyRef.current[0] = newRendered
+          setRendered(historyRef.current[0])
 
           if (newRendered.status === "completed") {
             setBusy(busyRef.current = false)
@@ -283,7 +283,7 @@ export default function Main() {
       </div>
 
       <div className={[
-        "flex flex-col w-full pt-4 space-y-3 px-2 text-gray-50 dark:text-gray-50",
+        "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
         <div className="flex flex-row">
@@ -299,7 +299,7 @@ export default function Main() {
             {i < (clickables.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <div className="text-xl p-3 rounded-xl backdrop-blur-sm bg-white/30">
+        <div className="text-xl p-4 rounded-xl backdrop-blur-sm bg-white/30">
           You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span>
         </div>
         <Renderer
@@ -311,7 +311,7 @@ export default function Main() {
           engine={engine}
           debug={debug}
         />
-        <div className="text-xl rounded-xl backdrop-blur-sm bg-white/30">{dialogue}</div>
+        <div className="text-xl rounded-xl backdrop-blur-sm bg-white/30 p-4">{dialogue}</div>
       </div>
     </div>
   )
