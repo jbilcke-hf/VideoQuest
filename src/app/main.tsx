@@ -82,11 +82,16 @@ export default function Main() {
 
       console.log("got the first version of our scene!", newRendered)
 
+      const fakeNewRendered = 
       // detect if type game type changed while we were busy
       if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
         return
+
       }
+      // we cheat a bit by displaying the previous image as a placeholder
+      // this is better than displaying a blank image!
+      newRendered.assetUrl = rendered.assetUrl
 
       historyRef.current.unshift(newRendered)
       setRendered(newRendered)
@@ -245,17 +250,17 @@ export default function Main() {
     const current = new URLSearchParams(Array.from(searchParams.entries()))
     current.set("engine", newEngine)
     const search = current.toString()
-    const query = search ? `?${search}` : ""
+    //const query = search ? `?${search}` : ""
 
     // for some reason, this doesn't work?!
-    router.replace(`${pathname}${query}`, { })
+    //router.replace(`${pathname}${query}`, { })
     
     // workaround.. but it is strange that router.replace doesn't work..
-    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
-    window.history.pushState({path: newurl}, '', newurl)
+    //let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    //window.history.pushState({path: newurl}, '', newurl)
 
     // actually we don't handle partial reload very well, so let's reload the whole page
-    // window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
+    window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
   // determine when to show the spinner
