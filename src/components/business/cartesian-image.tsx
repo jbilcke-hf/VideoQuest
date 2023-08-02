@@ -7,10 +7,12 @@ export const CartesianImage = forwardRef(({
   rendered,
   onEvent,
   className,
+  debug
 }: {
   rendered: RenderedScene
   onEvent: SceneEventHandler
   className?: string
+  debug?: boolean
 }, ref: ForwardedRef<HTMLDivElement>) => {
 
   const handleEvent = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, isClick: boolean) => {
@@ -44,10 +46,10 @@ export const CartesianImage = forwardRef(({
         ref={ref as any}
         className="absolute"
       />
-      <img
+      {debug && <img
         src={rendered.maskUrl || undefined}
         className="absolute opacity-50"
-      />
+      />}
     </div>
   )
 })

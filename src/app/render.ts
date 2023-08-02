@@ -39,7 +39,7 @@ export async function newRender({
       renderId: "",
       status: "error",
       assetUrl: "",
-      maskBase64: "",
+      maskUrl: "",
       error: "failed to fetch the data",
       segments: []
     }
@@ -61,7 +61,6 @@ export async function newRender({
         height: isForVideo ? 320 : 512,
       }))
     
-
       const res = await fetch(`${apiUrl}/render`, {
         method: "POST",
         headers: {
@@ -116,7 +115,7 @@ export async function getRender(renderId: string) {
     renderId: "",
     status: "error",
     assetUrl: "",
-    maskBase64: "",
+    maskUrl: "",
     error: "failed to fetch the data",
     segments: []
   }

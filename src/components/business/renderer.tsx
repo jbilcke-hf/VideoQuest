@@ -16,6 +16,7 @@ export const Renderer = ({
   isLoading,
   game,
   engine,
+  debug
 }: {
   rendered: RenderedScene
   onUserAction: (actionnable: string) => void
@@ -23,6 +24,7 @@ export const Renderer = ({
   isLoading: boolean
   game: Game
   engine: Engine
+  debug: boolean
 }) => {
   const timeoutRef = useRef<any>()
   const viewRef = useRef<HTMLDivElement>()
@@ -192,17 +194,20 @@ export const Renderer = ({
               rendered={rendered}
               ref={viewRef as any}
               onEvent={handleMouseEvent}
+              debug={debug}
             />
           : engine.type === "spherical_image"
           ? <SphericalImage
               rendered={rendered}
               ref={viewRef as any}
               onEvent={handleMouseEvent}
+              debug={debug}
             />
           : <CartesianImage
               rendered={rendered}
               ref={viewRef as any}
               onEvent={handleMouseEvent}
+              debug={debug}
             />
         }
 

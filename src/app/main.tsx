@@ -29,7 +29,7 @@ const getInitialRenderedScene = (): RenderedScene => ({
   status: "pending",
   assetUrl: "", 
   error: "",
-  maskBase64: "",
+  maskUrl: "",
   segments: []
 })
 export default function Main() {
@@ -46,6 +46,8 @@ export default function Main() {
 
   const requestedEngine = (searchParams.get('engine') as EngineType) || defaultEngine
   const [engine, setEngine] = useState<Engine>(getEngine(requestedEngine))
+
+  const debug = (searchParams.get('debug') === "true")
 
   const [situation, setSituation] = useState("")
   const [scene, setScene] = useState("")
@@ -189,7 +191,7 @@ export default function Main() {
       status: "pending",
       assetUrl: "", 
       error: "",
-      maskBase64: "",
+      maskUrl: "",
       segments:[]
     })
     */
@@ -296,6 +298,7 @@ export default function Main() {
           isLoading={rendered.status === "pending"}
           game={game}
           engine={engine}
+          debug={debug}
         />
         <div className="text-xl rounded-xl backdrop-blur-sm bg-white/30">{dialogue}</div>
       </div>

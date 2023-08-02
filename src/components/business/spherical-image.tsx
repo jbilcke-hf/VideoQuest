@@ -8,10 +8,12 @@ export const SphericalImage = forwardRef(({
   rendered,
   onEvent,
   className,
+  debug,
 }: {
   rendered: RenderedScene
   onEvent: SceneEventHandler
   className?: string
+  debug?: boolean
 }, ref: ForwardedRef<HTMLImageElement>) => {
 
 
