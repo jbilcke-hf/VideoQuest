@@ -92,6 +92,7 @@ export default function Main() {
       // we cheat a bit by displaying the previous image as a placeholder
       // this is better than displaying a blank image!
       newRendered.assetUrl = rendered.assetUrl
+      newRendered.maskUrl = rendered.maskUrl
 
       historyRef.current.unshift(newRendered)
       setRendered(newRendered)
