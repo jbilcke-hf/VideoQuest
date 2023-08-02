@@ -13,9 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 
 import { newRender, getRender } from "./render"
-
 import { RenderedScene } from "./types"
 import { Game, GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
@@ -47,7 +48,8 @@ export default function Main() {
   const requestedEngine = (searchParams.get('engine') as EngineType) || defaultEngine
   const [engine, setEngine] = useState<Engine>(getEngine(requestedEngine))
 
-  const debug = (searchParams.get('debug') === "true")
+  const requestedDebug = (searchParams.get('debug') === "true")
+  const [debug, setDebug] = useState<boolean>(requestedDebug)
 
   const [situation, setSituation] = useState("")
 
@@ -190,6 +192,22 @@ export default function Main() {
 
   const clickables = Array.from(new Set(rendered.segments.map(s => s.label)).values())
 
+  const handleToggleDebug = (isToggledOn: boolean) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    current.set("debug", `${isToggledOn}`)
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+
+    // for some reason, this doesn't work?!
+    router.replace(`${pathname}${query}`, { })
+    
+    // workaround.. but it is strange that router.replace doesn't work..
+    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    window.history.pushState({path: newurl}, '', newurl)
+
+    setDebug(isToggledOn)
+  }
+
   const handleSelectGame = (newGameType: GameType) => {
     gameRef.current = newGameType
     setGame(getGame(newGameType))
@@ -233,11 +251,11 @@ export default function Main() {
     router.replace(`${pathname}${query}`, { })
     
     // workaround.. but it is strange that router.replace doesn't work..
-    // let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
-    // window.history.pushState({path: newurl}, '', newurl)
+    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    window.history.pushState({path: newurl}, '', newurl)
 
     // actually we don't handle partial reload very well, so let's reload the whole page
-    window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
+    // window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
   // determine when to show the spinner
@@ -249,7 +267,7 @@ export default function Main() {
     >
       <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 dark:border-gray-50 bg-gray-800 dark:bg-gray-800">
         <div className="flex flex-row items-center space-x-3 font-mono">
-          <label className="flex text-sm">Select a story:</label>
+          <Label className="flex text-sm">Select a story:</Label>
           <Select
             defaultValue={gameRef.current}
             onValueChange={(value) => { handleSelectGame(value as GameType) }}>
@@ -258,13 +276,21 @@ export default function Main() {
             </SelectTrigger>
             <SelectContent>
               {Object.entries(games).map(([key, game]) =>
-              <SelectItem key={key} value={key}>{game.title}</SelectItem>
+                <SelectItem key={key} value={key}>{game.title}</SelectItem>
               )}
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-row items-center space-x-3 font-mono">
-          <label className="flex text-sm">Rendering engine:</label>
+          <Switch
+             checked={debug}
+             onCheckedChange={handleToggleDebug}
+             disabled={isLoading}
+           />
+           <Label>Debug</Label>
+        </div>
+        <div className="flex flex-row items-center space-x-3 font-mono">
+          <Label className="flex text-sm">Rendering engine:</Label>
           <Select
             defaultValue={engine.type}
             onValueChange={(value) => { handleSelectEngine(value as EngineType) }}>
