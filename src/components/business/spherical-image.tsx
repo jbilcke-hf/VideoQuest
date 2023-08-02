@@ -2,13 +2,14 @@ import { ForwardedRef, forwardRef } from "react"
 import { ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
 
 import { SceneEventHandler } from "./types"
+import { RenderedScene } from "@/app/types"
 
 export const SphericalImage = forwardRef(({
-  src,
+  rendered,
   onEvent,
   className,
 }: {
-  src: string
+  rendered: RenderedScene
   onEvent: SceneEventHandler
   className?: string
 }, ref: ForwardedRef<HTMLImageElement>) => {
@@ -16,7 +17,7 @@ export const SphericalImage = forwardRef(({
 
   return (
     <ReactPhotoSphereViewer
-      src={src}
+      src={rendered.assetUrl}
       // ref={ref}
       container=""
       containerClass={className}

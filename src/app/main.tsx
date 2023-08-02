@@ -270,7 +270,7 @@ export default function Main() {
       </div>
 
       <div className={[
-        "flex flex-col w-full pt-4 space-y-2 px-2 text-gray-50 dark:text-gray-50",
+        "flex flex-col w-full pt-4 space-y-3 px-2 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
         <div className="flex flex-row">
@@ -286,7 +286,9 @@ export default function Main() {
             {i < (clickables.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <p className="text-xl">You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span></p>
+        <div className="text-xl p-3 rounded-xl backdrop-blur-sm bg-white/30">
+          You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span>
+        </div>
         <Renderer
           rendered={rendered}
           onUserAction={handleUserAction}
@@ -295,7 +297,7 @@ export default function Main() {
           game={game}
           engine={engine}
         />
-        <p className="text-xl">{dialogue}</p>
+        <div className="text-xl rounded-xl backdrop-blur-sm bg-white/30">{dialogue}</div>
       </div>
     </div>
   )

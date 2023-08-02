@@ -1,24 +1,21 @@
 import { ForwardedRef, forwardRef } from "react"
 
 import { SceneEventHandler } from "./types"
+import { RenderedScene } from "@/app/types"
 
 export const CartesianVideo = forwardRef(({
-  src,
-  width,
-  height,
+  rendered,
   onEvent,
   className,
 }: {
-  src: string
-  width: number | string
-  height: number | string
+  rendered: RenderedScene
   onEvent: SceneEventHandler
   className?: string
-}, ref: ForwardedRef<HTMLVideoElement>) => {
+}, ref: ForwardedRef<HTMLDivElement>) => {
 
-  const handleEvent = (event: React.MouseEvent<HTMLVideoElement, MouseEvent>, isClick: boolean) => {
+  const handleEvent = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, isClick: boolean) => {
 
-    const element = ((ref as any)?.current) as HTMLVideoElement
+    const element = ((ref as any)?.current) as HTMLDivElement
 
     if (!element) {
       console.log("element isn't ready")
@@ -34,18 +31,24 @@ export const CartesianVideo = forwardRef(({
   }
 
   return (
-    <video
-      src={src}
-      ref={ref}
+    <div
+    className={className}
+    ref={ref}
+    onMouseUp={(event) => handleEvent(event, true)}
+    onMouseMove={(event) => handleEvent(event, false)}
+  >
+   <video
+      src={rendered.assetUrl || undefined}
       muted
       autoPlay
       loop
-      width={width}
-      height={height}
-      className={className}
-      onMouseUp={(event) => handleEvent(event, true)}
-      onMouseMove={(event) => handleEvent(event, false)}
+      className="absolute"
     />
+    <img
+      src={rendered.maskUrl || undefined}
+      className="absolute opacity-50"
+    />
+  </div>
   )
 })
 

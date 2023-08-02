@@ -1,24 +1,21 @@
 import { ForwardedRef, forwardRef } from "react"
 
 import { SceneEventHandler } from "./types"
+import { RenderedScene } from "@/app/types"
 
 export const CartesianImage = forwardRef(({
-  src,
-  width,
-  height,
+  rendered,
   onEvent,
   className,
 }: {
-  src: string
-  width: number | string
-  height: number | string
+  rendered: RenderedScene
   onEvent: SceneEventHandler
   className?: string
-}, ref: ForwardedRef<HTMLImageElement>) => {
+}, ref: ForwardedRef<HTMLDivElement>) => {
 
-  const handleEvent = (event: React.MouseEvent<HTMLImageElement, MouseEvent>, isClick: boolean) => {
+  const handleEvent = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, isClick: boolean) => {
 
-    const element = ((ref as any)?.current) as HTMLImageElement
+    const element = ((ref as any)?.current) as HTMLDivElement
 
     if (!element) {
       console.log("element isn't ready")
@@ -26,23 +23,32 @@ export const CartesianImage = forwardRef(({
     }
 
     const boundingRect = element.getBoundingClientRect()
-    const x = event.clientX - boundingRect.left
-    const y = event.clientY - boundingRect.top
+    const x = (event.clientX - boundingRect.left) * 1.03
+    const y = (event.clientY - boundingRect.top) //* 1.03
 
     const eventType = isClick ? "click" : "hover"
     onEvent(eventType, x, y)
   }
 
+  if (!rendered.assetUrl) {
+    return null
+  }
   return (
-    <img
-      src={src}
-      ref={ref}
-      width={width}
-      height={height}
+    <div
       className={className}
       onMouseUp={(event) => handleEvent(event, true)}
       onMouseMove={(event) => handleEvent(event, false)}
-    />
+    >
+      <img
+        src={rendered.assetUrl || undefined}
+        ref={ref as any}
+        className="absolute"
+      />
+      <img
+        src={rendered.maskUrl || undefined}
+        className="absolute opacity-50"
+      />
+    </div>
   )
 })
 

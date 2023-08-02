@@ -10,11 +10,7 @@ import { CartesianVideo } from "./cartesian-video"
 import { SphericalImage } from "./spherical-image"
 
 export const Renderer = ({
-  rendered: {
-    assetUrl = "",
-    maskBase64 = "",
-    segments = []
-  },
+  rendered,
   onUserAction,
   onUserHover,
   isLoading,
@@ -29,34 +25,30 @@ export const Renderer = ({
   engine: Engine
 }) => {
   const timeoutRef = useRef<any>()
-  const imgRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null)
+  const viewRef = useRef<HTMLDivElement>()
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
   const [progressPercent, setProcessPercent] = useState(0)
   const progressRef = useRef(0)
   const isLoadingRef = useRef(isLoading)
-  const maskUrl = `data:image/png;base64,${maskBase64}`
 
   useEffect(() => {
-    if (maskBase64) {
-      // console.log("maskBase64:", maskBase64)
-      const img = new Image();
-      img.onload = function () {
-        canvasRef.current = document.createElement('canvas');
-        canvasRef.current.width = img.width;
-        canvasRef.current.height = img.height;
-        contextRef.current = canvasRef.current.getContext('2d', {
-          willReadFrequently: true
-        });
-        contextRef.current!.drawImage(img, 0, 0, img.width, img.height);
-      }
-      img.src = "data:image/png;base64," + maskBase64;
-    } else {
-      // console.log("error, no maskBase64 detected!")
+    if (!rendered.maskUrl) {
+      return
     }
-  }, [maskBase64]);
-
+    const img = new Image()
+    img.onload = function () {
+      canvasRef.current = document.createElement('canvas')
+      canvasRef.current.width = img.width
+      canvasRef.current.height = img.height
+      contextRef.current = canvasRef.current.getContext('2d', {
+        willReadFrequently: true
+      })
+      contextRef.current!.drawImage(img, 0, 0, img.width, img.height)
+    }
+    img.src = rendered.maskUrl
+  }, [rendered.maskUrl])
 
   const getPixelColor = (x: number, y: number) => {
     if (!contextRef.current) {
@@ -74,7 +66,7 @@ export const Renderer = ({
 
   const getSegmentAt = (x: number, y: number): ImageSegment => {
     if (!contextRef.current) throw new Error("Unable to get context from canvas");
-    if (!maskBase64) throw new Error("Mask is undefined");
+    if (!rendered.maskUrl) throw new Error("Mask is undefined");
 
     let closestSegment: ImageSegment = {
       id: 0,
@@ -92,7 +84,7 @@ export const Renderer = ({
   
     let minDistance = Infinity;
         
-    segments.forEach(segment => {
+    rendered.segments.forEach(segment => {
       const segmentColor = segment.color.slice(0,3); // get the RGB part only
 
       const distance = Math.sqrt(
@@ -122,7 +114,7 @@ export const Renderer = ({
     // sometimes we generate an image, but the segmentation fails
     // so if we click anywhere bug there are no segments,
     // we inform the rest of the app by passing nothing
-    if (type === "click" && segments.length == 0) {
+    if (type === "click" && rendered.segments.length == 0) {
       onUserAction("nothing, to trigger a scene reload")
       return
     }
@@ -149,7 +141,7 @@ export const Renderer = ({
     } else {
       // only trigger hover events if there are segments,
       // otherwise it's best to stay silent
-      if (segments.length) {
+      if (rendered.segments.length) {
         onUserHover(actionnable)
       }
     }
@@ -177,40 +169,7 @@ export const Renderer = ({
     if (isLoading) {
       timeoutRef.current = setInterval(updateProgressBar, 200)
     }
-  }, [isLoading, assetUrl, engine?.type])
-
-
-  /*
-        <img
-          src={assetUrl}
-          ref={imgRef}
-          width="1024px"
-          height="512px"
-          className={
-            [
-              "absolute top-0 left-0",
-              actionnable ? "cursor-pointer" : ""
-            ].join(" ")
-          }
-          onMouseDown={(event) => handleMouseEvent(event, true)}
-          onMouseMove={handleMouseEvent}
-        />
-
-        <img
-          src={"data:image/png;base64," + maskBase64}
-          ref={imgRef}
-          width="1024px"
-          height="512px"
-          className={
-            [
-              "absolute top-0 left-0 opacity-30",
-              actionnable ? "cursor-pointer" : ""
-            ].join(" ")
-          }
-          onMouseDown={(event) => handleMouseEvent(event, true)}
-          onMouseMove={handleMouseEvent}
-        />
-        */
+  }, [isLoading, rendered.assetUrl, engine?.type])
 
   return (
     <div className="w-full pt-2">
@@ -219,7 +178,7 @@ export const Renderer = ({
           "relative border-2 border-gray-50 rounded-xl overflow-hidden",
           engine.type === "cartesian_video"
           || engine.type === "cartesian_image"
-            ? "w-[1024px] h-[512px]"
+            ? "w-full h-screen" // w-[1024px] h-[512px]"
             : "w-full h-[800px]",
             
           isLoading
@@ -228,27 +187,21 @@ export const Renderer = ({
             ? "cursor-pointer"
             : ""
           ].join(" ")}>
-        {!assetUrl ?
-          null
-        : engine.type === "cartesian_video"
+        {engine.type === "cartesian_video"
           ? <CartesianVideo
-              src={assetUrl}
-              ref={imgRef as any}
-              width="1024px"
-              height="512px"
+              rendered={rendered}
+              ref={viewRef as any}
               onEvent={handleMouseEvent}
             />
           : engine.type === "spherical_image"
           ? <SphericalImage
-              src={assetUrl}
-              ref={imgRef as any}
+              rendered={rendered}
+              ref={viewRef as any}
               onEvent={handleMouseEvent}
             />
           : <CartesianImage
-              src={assetUrl}
-              ref={imgRef as any}
-              width="1024px"
-              height="512px"
+              rendered={rendered}
+              ref={viewRef as any}
               onEvent={handleMouseEvent}
             />
         }
