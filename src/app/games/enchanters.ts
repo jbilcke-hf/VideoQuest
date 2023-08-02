@@ -10,9 +10,10 @@ const initialActionnables = [
   "dragon",
   "castle",
   "gate",
-  "stone wall",
+  "rocks",
   "lake",
-  "roof"
+  "roof",
+  "boat",
 ]
 
 export const game: Game = {

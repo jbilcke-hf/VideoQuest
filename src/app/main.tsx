@@ -54,7 +54,11 @@ export default function Main() {
   const [dialogue, setDialogue] = useState("")
   const [hoveredActionnable, setHoveredActionnable] = useState("")
 
+  const [isBusy, setBusy] = useState<boolean>(true)
+  const busyRef = useRef(true)
+
   const loopRef = useRef<any>(null)
+
 
   const loadNextScene = async (nextSituation?: string, nextActionnables?: string[]) => {
     
@@ -72,7 +76,7 @@ export default function Main() {
         actionnables: (Array.isArray(nextActionnables) && nextActionnables.length
           ? nextActionnables
           : game.initialActionnables
-        ).slice(0, 6) // too many can slow us down it seems
+        ).slice(0, 10) // too many can slow us down it seems
       })
 
       console.log("got the first version of our scene!", renderedRef.current)
@@ -125,6 +129,10 @@ export default function Main() {
           console.log("updating scene..")
           renderedRef.current = newRendered
           setRendered(renderedRef.current)
+
+          if (newRendered.status === "completed") {
+            setBusy(busyRef.current = false)
+          }
         }
       } catch (err) {
         console.error(err)
@@ -141,8 +149,8 @@ export default function Main() {
   }, [])
 
   const handleUserAction = async (actionnable: string) => {
-    console.log("user actionnable:", actionnable)
-  
+    console.log("user clicked on:", actionnable)
+    setBusy(busyRef.current = true)
 
     // TODO: ask Llama2 what to do about it
     // we need a frame and some actionnables,
@@ -232,6 +240,9 @@ export default function Main() {
     window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
+  // determine when to show the spinner
+  const isLoading = isBusy || rendered.status === "pending"
+
   return (
     <div
       className="flex flex-col w-full max-w-5xl"
@@ -295,7 +306,7 @@ export default function Main() {
           rendered={rendered}
           onUserAction={handleUserAction}
           onUserHover={setHoveredActionnable}
-          isLoading={rendered.status === "pending"}
+          isLoading={isLoading}
           game={game}
           engine={engine}
           debug={debug}

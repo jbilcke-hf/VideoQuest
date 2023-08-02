@@ -38,7 +38,9 @@ const initialActionnables = [
   "tree",
   "river",
   "sea",
-  "house"
+  "house",
+  "window",
+  "roof"
 ]
 
 export const game: Game = {

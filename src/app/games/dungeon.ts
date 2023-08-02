@@ -34,15 +34,16 @@ const initialSituation = [
 ].join(", ")
 
 const initialActionnables = [
- //  "floor",
-  // "fireplace",
   "door",
- // "window",
-  "chair",
+  "box",
+  "stone wall",
+  "torch",
+  "window",
   "chest",
   "key",
+  "machine",
   "table",
-  // torch"
+  "fireplace"
 ]
 
 export const game: Game = {

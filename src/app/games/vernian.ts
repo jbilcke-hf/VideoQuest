@@ -11,9 +11,12 @@ const initialActionnables = [
   "box",
   "door",
   "table",
-  "blueprint",
+  "chair",
+  "paper",
   "gear",
-  "machine"
+  "machine",
+  "window",
+  "ground"
 ]
 
 export const game: Game = {

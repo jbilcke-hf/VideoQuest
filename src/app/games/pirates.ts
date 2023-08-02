@@ -26,8 +26,17 @@ const lights = [
 ]
 
 const initialActionnables = [
-  "chest",
+  "door",
   "box",
+  "sea",
+  "chest",
+  "key",
+  "parrot",
+  "lock",
+  "barrel",
+  "tree",
+  "rope"
+  // skull
   // "door",
   // "window",
   // "sail",
@@ -39,8 +48,6 @@ const initialActionnables = [
   // "rope",
   // "bucket",
  // "skull",
-  "parrot",
-  "lock",
   // "ship",
   // "wooden leg"
 ]

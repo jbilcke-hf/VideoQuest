@@ -6,12 +6,16 @@ const initialSituation = [
 ].join(", ")
 
 const initialActionnables = [
+  "moon",
+  "dunes",
+  "building",
   "gun",
   "person",
   "door",
   "laser",
   "window",
-  "box"
+  "box",
+  "rocks"
 ]
 
 export const game: Game = {

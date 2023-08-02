@@ -28,8 +28,8 @@ export const engines: Record<string, Engine> = {
   cartesian_video: {
     type: "cartesian_video",
     label: "Cartesian video",
-    visible: false,
-    enabled: false,
+    visible: true,
+    enabled: true,
     modelName: "Zeroscope",
     modelUrl: "https://huggingface.co/cerspense/zeroscope_v2_576w",
   },
