@@ -4,7 +4,7 @@ emoji: 🎞🛡
 colorFrom: yellow
 colorTo: red
 sdk: docker
-pinned: false
+pinned: true
 app_port: 3000
 ---
 
