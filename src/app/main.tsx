@@ -82,7 +82,6 @@ export default function Main() {
 
       console.log("got the first version of our scene!", newRendered)
 
-      const fakeNewRendered = 
       // detect if type game type changed while we were busy
       if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
