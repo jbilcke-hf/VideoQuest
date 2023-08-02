@@ -289,9 +289,10 @@ export default function Main() {
         </div>
         <div className="flex flex-row items-center space-x-3 font-mono">
           <Switch
-             checked={debug}
-             onCheckedChange={handleToggleDebug}
-             disabled={isLoading}
+              checked={debug}
+              onCheckedChange={handleToggleDebug}
+              // we won't disable it, so we can occupy our using while loading
+              // disabled={isLoading}
            />
            <Label>Debug</Label>
         </div>
