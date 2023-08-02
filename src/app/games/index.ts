@@ -11,6 +11,6 @@ import { game as pharaoh } from "./pharaoh"
 
 export const games = { pirates, city, dungeon, doom, vernian, enchanters, flamenco, pharaoh}
 
-export const defaultGame: GameType = "flamenco"
+export const defaultGame: GameType = "enchanters"
 
 export const getGame = (type?: GameType) => games[type || defaultGame] || games[defaultGame]
