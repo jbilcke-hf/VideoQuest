@@ -16,6 +16,9 @@ export const SphericalImage = forwardRef(({
   debug?: boolean
 }, ref: ForwardedRef<HTMLImageElement>) => {
 
+  if (!rendered.assetUrl) {
+    return null
+  }
 
   return (
     <ReactPhotoSphereViewer
@@ -24,8 +27,7 @@ export const SphericalImage = forwardRef(({
       container=""
       containerClass={className}
       // 
-      height="800px"
-     //  height={'100vh'}
+      height="100vh"
       width="100%"
 
       defaultZoomLvl={1}

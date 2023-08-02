@@ -180,8 +180,8 @@ export const Renderer = ({
           "relative border-2 border-gray-50 rounded-xl overflow-hidden",
           engine.type === "cartesian_video"
           || engine.type === "cartesian_image"
-            ? "w-full h-screen" // w-[1024px] h-[512px]"
-            : "w-full h-[800px]",
+            ? " w-[1024px] h-[512px]" // w-[1024px] h-[512px]"
+            : "w-full h-screen",
             
           isLoading
             ? "cursor-wait"
