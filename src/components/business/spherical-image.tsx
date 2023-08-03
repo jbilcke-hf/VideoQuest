@@ -1,8 +1,10 @@
-import { ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
+import { useEffect, useRef, useState } from "react"
+import { PluginConstructor } from "@photo-sphere-viewer/core"
+import { LensflarePlugin, ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
+
+import { RenderedScene } from "@/app/types"
 
 import { SceneEventHandler } from "./types"
-import { RenderedScene } from "@/app/types"
-import { useEffect, useRef, useState } from "react"
 
 export function SphericalImage({
   rendered,
@@ -27,6 +29,7 @@ export function SphericalImage({
     defaultZoomLvl: 1,
     overlay: rendered.maskUrl || undefined,
     overlayOpacity: debug ? 0.5 : 0,
+    fisheye: false, // ..no!
     /*
     panoData: {
       fullWidth: 2000,
@@ -71,6 +74,20 @@ export function SphericalImage({
     task()
   }, [sceneConfig, rendered.assetUrl, ref.current])
 
+  const plugins: (PluginConstructor | [PluginConstructor, any])[] = [
+
+    // for the lensflare plugin we are also gonna need aw ay to determine the position
+    [LensflarePlugin, {
+      lensflares: [
+        {
+          id: 'sun',
+          position: { yaw: '145deg', pitch: '2deg' },
+          type: 0,
+        }
+      ]
+    }]
+  ]
+
   if (!rendered.assetUrl) {
     return null
   }
@@ -84,6 +101,7 @@ export function SphericalImage({
       // 
       height="100vh"
       width="100%"
+      // plugins={plugins}
 
       {...options}
    

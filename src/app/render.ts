@@ -29,7 +29,7 @@ export async function newRender({
     throw new Error(`cannot call the rendering API without actionnables, aborting..`)
   }
 
-  const nbFrames = engine.type === "cartesian_video" ? 8 : 1
+  const nbFrames = engine.type.includes("video") ? 8 : 1
 
   const cacheKey = `render/${JSON.stringify({ prompt, actionnables, nbFrames, type: engine.type })}`
 

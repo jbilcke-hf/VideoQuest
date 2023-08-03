@@ -47,8 +47,8 @@ export const engines: Record<string, Engine> = {
     label: "Spherical video",
     visible: false,
     enabled: false,
-    modelName: "",
-    modelUrl: "",
+    modelName: "Zeroscope",
+    modelUrl: "https://huggingface.co/cerspense/zeroscope_v2_576w",
   },
 
   spherical_stereogram: {

@@ -194,7 +194,7 @@ export const Renderer = ({
               onEvent={handleMouseEvent}
               debug={debug}
             />
-          : engine.type === "spherical_image"
+          : (engine.type === "spherical_image" || engine.type === "spherical_video")
           ? <SphericalImage
               rendered={rendered}
               onEvent={handleMouseEvent}
