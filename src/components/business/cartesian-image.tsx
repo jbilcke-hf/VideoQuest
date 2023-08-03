@@ -1,7 +1,6 @@
 import { useRef } from "react"
 import { SceneEventHandler } from "./types"
 import { RenderedScene } from "@/app/types"
-import { useImageDimension } from "@/lib/useImageDimension"
 
 export function CartesianImage({
   rendered,
@@ -15,13 +14,11 @@ export function CartesianImage({
   debug?: boolean
 }) {
 
-  const maskDimension = useImageDimension(rendered.maskUrl)
-
   const ref = useRef<HTMLImageElement>(null)
   const handleEvent = async (event: React.MouseEvent<HTMLImageElement, MouseEvent>, isClick: boolean) => {
 
     if (!ref.current) {
-      console.log("element isn't ready")
+      // console.log("element isn't ready")
       return
     }
 
@@ -35,14 +32,10 @@ export function CartesianImage({
 
     // then we convert them to relative coordinates
     const relativeX = containerX / boundingRect.width
-    const relativey = containerY / boundingRect.height
-
-    // finally, we convert back to coordinates within the input image
-    const imageX = relativeX * maskDimension.width
-    const imageY = relativey * maskDimension.height
+    const relativeY = containerY / boundingRect.height
 
     const eventType = isClick ? "click" : "hover"
-    onEvent(eventType, imageX, imageY)
+    onEvent(eventType, relativeX, relativeY)
   }
 
   if (!rendered.assetUrl) {
@@ -50,7 +43,11 @@ export function CartesianImage({
   }
   return (
     <div
-      className={className}
+      className={[
+        "h-[512px]",
+        className
+      ].join(" ")
+      }
     >
       <img
         src={rendered.assetUrl || undefined}

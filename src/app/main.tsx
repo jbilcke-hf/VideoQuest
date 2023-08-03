@@ -24,6 +24,7 @@ import { getBackground } from "@/app/queries/getBackground"
 import { getDialogue } from "@/app/queries/getDialogue"
 import { getActionnables } from "@/app/queries/getActionnables"
 import { Engine, EngineType, defaultEngine, engines, getEngine } from "./engines"
+import { normalizeActionnables } from "@/lib/normalizeActionnables"
 
 const getInitialRenderedScene = (): RenderedScene => ({
   renderId: "",
@@ -74,10 +75,11 @@ export default function Main() {
         prompt: game.getScenePrompt(nextSituation).join(", "),
 
         // ACTIONNABLES
-        actionnables: (Array.isArray(nextActionnables) && nextActionnables.length
+        actionnables: normalizeActionnables(
+          Array.isArray(nextActionnables) && nextActionnables.length
           ? nextActionnables
           : game.initialActionnables
-        ).slice(0, 10) // too many can slow us down it seems
+        )
       })
 
       console.log("got the first version of our scene!", newRendered)
@@ -170,7 +172,7 @@ export default function Main() {
       let newDialogue = ""
       try {
         newDialogue = await getDialogue({ game, situation, actionnable })
-        console.log(`newDialogue:`, newDialogue)
+        // console.log(`newDialogue:`, newDialogue)
         setDialogue(newDialogue)
       } catch (err) {
         console.log(`failed to generate dialogue (but it's only a nice to have, so..)`)
@@ -196,6 +198,8 @@ export default function Main() {
   }
 
   const clickables = Array.from(new Set(rendered.segments.map(s => s.label)).values())
+
+  // console.log("segments:", rendered.segments)
 
   const handleToggleDebug = (isToggledOn: boolean) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()))

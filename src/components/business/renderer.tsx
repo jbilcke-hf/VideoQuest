@@ -8,6 +8,7 @@ import { CartesianImage } from "./cartesian-image"
 import { SceneEventHandler, SceneEventType } from "./types"
 import { CartesianVideo } from "./cartesian-video"
 import { SphericalImage } from "./spherical-image"
+import { useImageDimension } from "@/lib/useImageDimension"
 
 export const Renderer = ({
   rendered,
@@ -33,6 +34,7 @@ export const Renderer = ({
   const [progressPercent, setProcessPercent] = useState(0)
   const progressRef = useRef(0)
   const isLoadingRef = useRef(isLoading)
+  const maskDimension = useImageDimension(rendered.maskUrl)
 
   useEffect(() => {
     if (!rendered.maskUrl) {
@@ -104,7 +106,8 @@ export const Renderer = ({
     return closestSegment;
   }
 
-  const handleMouseEvent: SceneEventHandler = async (type: SceneEventType, x: number, y: number) => {
+  // note: coordinates must be between 0 and 1
+  const handleMouseEvent: SceneEventHandler = async (type: SceneEventType, relativeX: number, relativeY: number) => {
     if (!contextRef.current) return; // Return early if mask image has not been loaded yet
   
     if (isLoading) {
@@ -120,13 +123,16 @@ export const Renderer = ({
       return
     }
 
-    const newSegment = getSegmentAt(x, y)
+    const imageX = relativeX * maskDimension.width
+    const imageY = relativeY * maskDimension.height
+    
+    const newSegment = getSegmentAt(imageX, imageY)
 
     if (actionnable !== newSegment.label) {
       if (newSegment.label) {
-        console.log(`User is hovering "${newSegment.label}"`)
+        // console.log(`User is hovering "${newSegment.label}"`)
       } else {
-        console.log(`Nothing in the area`)
+        // console.log(`Nothing in the area`)
       }
 
       // update the actionnable immediately, so we can show the hand / finger cursor pointer
@@ -179,8 +185,8 @@ export const Renderer = ({
           "relative border-2 border-gray-50 rounded-xl overflow-hidden",
           engine.type === "cartesian_video"
           || engine.type === "cartesian_image"
-            ? " w-[1024px] h-[512px]" // w-[1024px] h-[512px]"
-            : "w-full h-screen",
+            ? " w-full" // w-[1024px] h-[512px]"
+            : "w-full",
             
           isLoading
             ? "cursor-wait"

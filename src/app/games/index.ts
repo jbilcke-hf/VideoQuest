@@ -13,6 +13,6 @@ import { game as nexus } from "./nexus"
 
 export const games = { pirates, city, dungeon, doom, vernian, enchanters, flamenco, pharaoh, tensor, nexus}
 
-export const defaultGame: GameType = "tensor"
+export const defaultGame: GameType = "dungeon"
 
 export const getGame = (type?: GameType) => games[type || defaultGame] || games[defaultGame]

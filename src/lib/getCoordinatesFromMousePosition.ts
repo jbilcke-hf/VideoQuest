@@ -9,31 +9,38 @@ export function getCoordinatesFromMousePosition({
   imageHeight,
   fov,
 }: {
-  mouseX: number
-  mouseY: number
-  containerWidth: number
-  containerHeight: number
-  currentYaw: number
-  currentPitch: number
-  imageWidth: number
-  imageHeight: number
-  fov: number
+  mouseX: number,
+  mouseY: number,
+  containerWidth: number,
+  containerHeight: number,
+  currentYaw: number,
+  currentPitch: number,
+  imageWidth: number,
+  imageHeight: number,
+  fov: number,
 }): { x: number; y: number } {
-  // Convert mouse position to relative to the viewer's center
+  // Considering the full width/height of FOV
   const relativeX = 2 * (mouseX / containerWidth) - 1;
   const relativeY = 2 * (mouseY / containerHeight) - 1;
 
-  // Calculate angle differences (in degrees)
-  const deltaYaw = relativeX * fov / 2;
-  const deltaPitch = relativeY * fov / 2;
+  // yaw varies with FOV over width and pitch over height
+  const deltaYaw = relativeX * fov * (Math.PI / 180);
+  const deltaPitch = relativeY * fov * (Math.PI / 180);
+  
+  let newYaw = currentYaw + deltaYaw;
+  while (newYaw < 0) newYaw += 2 * Math.PI;
+  while (newYaw > 2 * Math.PI) newYaw -= 2 * Math.PI;
 
-  // Calculate new yaw and pitch
-  const newYaw = currentYaw + deltaYaw;
-  const newPitch = currentPitch + deltaPitch;
+  let newPitch = currentPitch + deltaPitch;
+  if (newPitch < -Math.PI / 2) newPitch = -Math.PI / 2;
+  if (newPitch > Math.PI / 2) newPitch = Math.PI / 2;
 
-  // Now convert these yaw, pitch back to (x, y) on the image
-  const x = ((newYaw + 180) / 360) * imageWidth;
-  const y = ((newPitch + 90) / 180) * imageHeight;
+  // Changing origin for the yaw rotation to bring image center to screen center
+  newYaw = (newYaw + Math.PI) % (2 * Math.PI);
+  
+  // Image X corresponds to Yaw and Y corresponds to Pitch
+  const x = ((newYaw / (2 * Math.PI)) * imageWidth) % imageWidth;
+  const y = (((newPitch + Math.PI / 2) / Math.PI) * imageHeight) % imageHeight;
 
   return { x, y };
 }

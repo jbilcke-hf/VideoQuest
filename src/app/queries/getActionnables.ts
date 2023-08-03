@@ -4,6 +4,7 @@ import { parseJsonList } from "@/lib/parseJsonList"
 
 import { getBase } from "./getBase"
 import { predict } from "./predict"
+import { normalizeActionnables } from "@/lib/normalizeActionnables"
 
 export const getActionnables = async ({
   game,
@@ -55,7 +56,7 @@ export const getActionnables = async ({
     }
   }
   
-  let result = []
+  let result: string[] = []
 
   try {
     result = parseJsonList(rawStringOutput)
@@ -68,33 +69,17 @@ export const getActionnables = async ({
 
     try {
       const sanitized = rawStringOutput.replaceAll("[", "").replaceAll("]", "")
-      result = (JSON.parse(`[${sanitized}]`) as string[]).map(item =>
-        // clean the words to remove any punctuation
-        item.replace(/\W/g, '').trim()
-      )
+      result = (JSON.parse(`[${sanitized}]`) as string[])
 
       if (!result.length) {
         throw new Error("no actionnables")
       }
     } catch (err) {
       console.log("failed to repair and recover a valid JSON! Using a generic fallback..")
-
-      return [
-        "door",
-        "rock",
-        "window",
-        "table",
-        "ground",
-        "sky",
-        "object",
-        "tree",
-        "wall",
-        "floor"
-      ]
       
       // throw new Error("failed to parse the actionnables")
     }
   }
 
-  return  result
+  return normalizeActionnables(result)
 }
