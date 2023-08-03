@@ -182,7 +182,7 @@ export const Renderer = ({
     <div className="w-full pt-2">
       <div
         className={[
-          "relative border-2 border-gray-50 rounded-xl overflow-hidden",
+          "relative border-2 border-gray-50 rounded-xl overflow-hidden min-h-[512px]",
           engine.type === "cartesian_video"
           || engine.type === "cartesian_image"
             ? " w-full" // w-[1024px] h-[512px]"

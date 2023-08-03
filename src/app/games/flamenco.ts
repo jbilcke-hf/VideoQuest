@@ -11,7 +11,7 @@ const initialSituation = [
 ].join(", ")
 
 const initialActionnables = [
-  "pigeon",
+  "sun",
   "face",
   "person",
   "building",

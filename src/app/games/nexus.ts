@@ -14,9 +14,9 @@ const initialActionnables = [
   "person",
   "building",
   "sidewalk",
-  "spaceship",
   "object",
   "window",
+  "light",
   "floor",
   "door"
 ]

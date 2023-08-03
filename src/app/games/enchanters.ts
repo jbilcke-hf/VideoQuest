@@ -12,7 +12,7 @@ const initialActionnables = [
   "gate",
   "rocks",
   "lake",
-  "roof",
+  "sun",
   "boat",
   "mountain",
   "sky"

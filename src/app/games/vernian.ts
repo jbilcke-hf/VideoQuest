@@ -12,7 +12,7 @@ const initialActionnables = [
   "door",
   "table",
   "chair",
-  "paper",
+  "sun",
   "gear",
   "machine",
   "window",

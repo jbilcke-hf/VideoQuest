@@ -38,6 +38,7 @@ export function SphericalImage({
   const options = {
     defaultZoomLvl,
     fisheye: false, // ..no!
+    overlay: rendered.maskUrl || undefined,
     overlayOpacity: debug ? 0.5 : 0,
     /*
     panoData: {
@@ -122,7 +123,7 @@ export function SphericalImage({
 
         // TODO we should separate all those updates, probaby
         viewer.setOptions(newOptions)
-        viewer.setOverlay(rendered.maskUrl || undefined)
+        // viewer.setOverlay(rendered.maskUrl || undefined)
 
         // console.log("SphericalImage: asking to re-render")
         viewerRef.current.needsUpdate()

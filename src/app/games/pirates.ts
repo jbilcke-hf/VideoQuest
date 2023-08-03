@@ -35,7 +35,7 @@ const initialActionnables = [
   "lock",
   "barrel",
   "tree",
-  "rope"
+  "sun"
   // skull
   // "door",
   // "window",

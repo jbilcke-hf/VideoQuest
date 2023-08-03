@@ -6,8 +6,8 @@ const initialSituation = [
 ].join(", ")
 
 const initialActionnables = [
-  "moon",
-  "dunes",
+  "sun",
+  "dune",
   "building",
   "gun",
   "person",
