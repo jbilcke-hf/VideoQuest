@@ -8,9 +8,11 @@ import { game as vernian } from "./vernian"
 import { game as enchanters } from "./enchanters"
 import { game as flamenco } from "./flamenco"
 import { game as pharaoh } from "./pharaoh"
+import { game as tensor } from "./tensor"
+import { game as nexus } from "./nexus"
 
-export const games = { pirates, city, dungeon, doom, vernian, enchanters, flamenco, pharaoh}
+export const games = { pirates, city, dungeon, doom, vernian, enchanters, flamenco, pharaoh, tensor, nexus}
 
-export const defaultGame: GameType = "enchanters"
+export const defaultGame: GameType = "tensor"
 
 export const getGame = (type?: GameType) => games[type || defaultGame] || games[defaultGame]

@@ -1,6 +1,16 @@
 import { EngineType } from "../engines"
 
-export type GameType = "pirates" | "city" | "dungeon" | "doom" | "vernian" | "enchanters" | "pharaoh" | "flamenco"
+export type GameType =
+  | "pirates"
+  | "city"
+  | "dungeon"
+  | "doom"
+  | "vernian"
+  | "enchanters"
+  | "pharaoh"
+  | "flamenco"
+  | "tensor"
+  | "nexus"
 
 export interface Scene {
   actionnables: string[]
