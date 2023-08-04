@@ -400,7 +400,11 @@ export default function Main() {
         "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
-        <div className="flex flex-row justify-end">
+        <div className="flex flex-row">
+          <div className="text-xl px-2">{lastEvent}</div>
+        </div>
+        <Inventory game={game} onEvent={handleInventoryEvent} />
+        <div className="flex flex-row">
           <div className="text-xl mr-2">
             {rendered.segments.length
               ? <span>💡 Try to click on:</span>
@@ -413,10 +417,6 @@ export default function Main() {
             {i < (clickables.length - 1) ? <div>,</div> : null}
           </div>)}
         </div>
-        <div className="flex flex-row justify-start">
-          <div className="text-xl px-2">{lastEvent}</div>
-        </div>
-        <Inventory game={game} onEvent={handleInventoryEvent} />
         <SceneRenderer
           rendered={rendered}
           onEvent={handleSceneEvent}
