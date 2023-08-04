@@ -400,21 +400,21 @@ export default function Main() {
         "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
-        <div className="flex flex-row justify-between">
-          <div className="text-xl px-2">{lastEvent}</div>
-          <div className="flex flex-row">
-            <div className="text-xl mr-2">
-              {rendered.segments.length
-                ? <span>💡 Try to click on:</span>
-                : <span>⌛ Generating clickable areas..</span>
-              }
-            </div>
-            {clickables.map((clickable, i) => 
-            <div key={i} className="flex flex-row text-xl mr-2">
-              <div className="">{clickable}</div>
-              {i < (clickables.length - 1) ? <div>,</div> : null}
-            </div>)}
+        <div className="flex flex-row justify-end">
+          <div className="text-xl mr-2">
+            {rendered.segments.length
+              ? <span>💡 Try to click on:</span>
+              : <span>⌛ Generating clickable areas..</span>
+            }
           </div>
+          {clickables.map((clickable, i) => 
+          <div key={i} className="flex flex-row text-xl mr-2">
+            <div className="">{clickable}</div>
+            {i < (clickables.length - 1) ? <div>,</div> : null}
+          </div>)}
+        </div>
+        <div className="flex flex-row justify-start">
+          <div className="text-xl px-2">{lastEvent}</div>
         </div>
         <Inventory game={game} onEvent={handleInventoryEvent} />
         <SceneRenderer
