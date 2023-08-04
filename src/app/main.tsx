@@ -328,10 +328,10 @@ export default function Main() {
       newEvent = <>You just grabbed <span className="font-bold">{item.name}</span></>
     } else if (event === "DroppedOnAnotherItem") {
       newEventString = `Player is trying to use those object from their own inventory: "${item.name}" with "${target?.name}". What do you think could the combination of ${item.name} and ${target?.name} lead to? Invent a funny outcome!`
-      newEvent = <>You tried to combine <span className="font-bold">"{item.name}"</span> with <span className="font-bold">"{target?.name}"</span></>
+      newEvent = <>You tried to combine <span className="font-bold">&quot;{item.name}&quot;</span> with <span className="font-bold">&quot;{target?.name}&quot;</span></>
     } else if (event === "ClickOnItem") {
       newEventString = `Player is inspecting "${item.name}" from their inventory, which has the following description: "${item.description}". Can you invent a funny back story?`
-      newEvent = <>🔎 You are inspecting <span className="font-bold">"{item.name}".</span> {item.description}</>
+      newEvent = <>🔎 You are inspecting <span className="font-bold">&quot;{item.name}&quot;.</span> {item.description}</>
     }
 
     if (newEventString && newEventString !== lastEventString) {
