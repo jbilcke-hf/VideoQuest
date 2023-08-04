@@ -3,6 +3,7 @@
 import Head from "next/head"
 
 import Main from "./main"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 // https://nextjs.org/docs/pages/building-your-application/optimizing/fonts 
 
@@ -18,7 +19,9 @@ export default async function IndexPage({ params: { ownerId } }: { params: { own
         `dark fixed inset-0 flex flex-col items-center
          bg-stone-900 text-stone-10 overflow-y-scroll
         `}>
-        <Main />
+        <TooltipProvider delayDuration={100}>
+          <Main />
+        </TooltipProvider>
       </main>
     </>
   )

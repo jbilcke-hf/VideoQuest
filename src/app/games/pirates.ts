@@ -1,5 +1,6 @@
 import { lugrasimo } from "@/lib/fonts"
 import { Game } from "./types"
+import { InventoryItem } from "../types"
 
 const actions = [
   "idling",
@@ -23,6 +24,57 @@ const positions = [
 
 const lights = [
   "during the day",
+]
+
+const inventory: InventoryItem[] = [
+  {
+    name: "coconut",
+    title: "Coconut",
+    caption: "",
+    description: "Might be useful for lunch or fighting."
+  },
+  {
+    name: "compass",
+    title: "Compass",
+    caption: "",
+    description: "Never get lost in the Seven Seas!"
+  },
+  {
+    name: "crystal-skull",
+    title: "Crystall skull",
+    caption: "",
+    description: "It says \"Made in Germany\"."
+  },
+  {
+    name: "fishbone",
+    title: "Fish bone",
+    caption: "",
+    description: "I use this to pick my teeth. And locks."
+  },
+  {
+    name: "lizard",
+    title: "Lizard",
+    caption: "",
+    description: "Found this lizard, I call it Lizzie."
+  },
+  {
+    name: "parrot",
+    title: "Parrot",
+    caption: "",
+    description: "Arr!"
+  },
+  {
+    name: "pirate-hat",
+    title: "Pirate hat",
+    caption: "",
+    description: "Can't find the owner.. Now it\'s mine!"
+  },
+  {
+    name: "skunk",
+    title: "Skunk",
+    caption: "",
+    description: "So this is where the smell was coming from!"
+  },
 ]
 
 const initialActionnables = [
@@ -66,6 +118,7 @@ export const game: Game = {
   className: lugrasimo.className,
   initialSituation,
   initialActionnables,
+  inventory,
   getScenePrompt: (situation?: string) => [
     // this prompt is beautiful:
     // screenshot from an adventure videogame, inside the hold of a pirate ship, with a pirate chest in the center, at sunset, beautiful, award winning, unreal engine, intricate details

@@ -1,5 +1,6 @@
 import { edu } from "@/lib/fonts"
 import { Game } from "./types"
+import { InventoryItem } from "../types"
 
 const actions = [
   "busy pedestrians",
@@ -43,6 +44,15 @@ const initialActionnables = [
   "roof"
 ]
 
+const inventory: InventoryItem[] = [
+  // {
+  //   name: "pickaxe",
+  //   title: "Pickaxe",
+  //   caption: "",
+  //   description: ""
+  // },
+]
+
 export const game: Game = {
   title: "City",
   type: "city",
@@ -50,6 +60,7 @@ export const game: Game = {
   className:  edu.className,
   initialSituation,
   initialActionnables,
+  inventory,
   getScenePrompt: (situation?: string) => [
     `isometrical bird view of 3D rendered city`,
     `game screenshot`,

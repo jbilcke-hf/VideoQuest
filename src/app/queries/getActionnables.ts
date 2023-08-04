@@ -9,18 +9,14 @@ import { normalizeActionnables } from "@/lib/normalizeActionnables"
 export const getActionnables = async ({
   game,
   situation = "",
-  actionnable = "",
-  newDialogue = "",
-  // newActionnables = [],
+  userAction = "",
 }: {
   game: Game;
   situation: string;
-  actionnable: string;
-  newDialogue: string;
-  // newActionnables: string[];
+  userAction: string;
 }) => {
 
-  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase(game, situation, actionnable)
+  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase({ game, situation, userAction })
 
   const basePrompt = initialPrompt !== currentPrompt
     ? `Here is some context information about the initial scene: ${initialPrompt}`

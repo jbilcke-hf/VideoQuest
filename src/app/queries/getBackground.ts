@@ -7,18 +7,24 @@ import { predict } from "./predict"
 export const getBackground = async ({
   game,
   situation = "",
-  actionnable = "",
-  newDialogue = "",
+  userAction = "",
   newActionnables = [],
 }: {
   game: Game;
   situation: string;
-  actionnable: string;
-  newDialogue: string;
-  newActionnables: string[];
+  userAction: string;
+  newActionnables: string[],
 }) => {
 
-  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase(game, situation, actionnable)
+  const {
+    currentPrompt,
+    initialPrompt,
+    userSituationPrompt
+  } = getBase({
+    game,
+    situation,
+    userAction
+  })
 
   const basePrompt = initialPrompt !== currentPrompt
     ? `You must imagine the most plausible next scene, based on where the player was located before and is now, and also what the player did before and are doing now.
@@ -33,7 +39,7 @@ Here is the original scene in which the user was located at first, which will in
         basePrompt,
         `You are going to receive new information about the current whereabouts of the player.`,
         `Please write a caption for the next plausible scene to display in intricate details: the environment, lights, era, characters, objects, textures, light etc.`,
-        `You must include important objects, that the user can click on (eg. characters, doors, vehicles, useful objects).`,
+        `You MUST include the following important objects that the user can click on: ${newActionnables}.`,
         `Be straight to the point, and do not say things like "As the player clicks on.." or "the scene shifts to" (the best is not not mention the player at all)`
       ].filter(item => item).join("\n")
     },

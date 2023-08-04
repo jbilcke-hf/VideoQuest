@@ -1,5 +1,6 @@
 import { macondo } from "@/lib/fonts"
 import { Game } from "./types"
+import { InventoryItem } from "../types"
 
 const initialSituation = [
   `first-person view of a futuristic street`,
@@ -21,6 +22,47 @@ const initialActionnables = [
   "door"
 ]
 
+const inventory: InventoryItem[] = [
+  {
+    name: "box",
+    title: "Box",
+    caption: "",
+    description: "I wonder what this box contains?"
+  },
+  {
+    name: "disk",
+    title: "Disk",
+    caption: "",
+    description: "Now I need to find a computer.."
+  },
+  {
+    name: "eyeball",
+    title: "Eyeball",
+    caption: "",
+    description: "Looks like it belonged to a cyborg."
+  },
+  {
+    name: "parasite",
+    title: "Parasite",
+    caption: "",
+    description: "Don't eat this!"
+  },
+  /*
+  {
+    name: "robot-arm",
+    title: "Robot arm",
+    caption: "",
+    description: ""
+  },
+  */
+  {
+    name: "robot-hand",
+    title: "Robot hand",
+    caption: "",
+    description: ""
+  },
+]
+
 export const game: Game = {
   title: "Nexus",
   type: "nexus",
@@ -28,6 +70,7 @@ export const game: Game = {
   className: macondo.className,
   initialSituation,
   initialActionnables,
+  inventory,
   getScenePrompt: (situation?: string) => [
     `high-res photo from Blade Runner`,
     `cyberpunk, tokyo, futuristic clothes`,

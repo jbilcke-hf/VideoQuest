@@ -1,27 +1,25 @@
 import { useEffect, useRef, useState } from "react"
 
-import { ImageSegment, RenderedScene } from "@/app/types"
+import { ImageSegment, RenderedScene, SceneEvent } from "@/app/types"
 import { ProgressBar } from "../misc/progress"
 import { Game } from "@/app/games/types"
-import { Engine, EngineType } from "@/app/engines"
+import { Engine } from "@/app/engines"
 import { CartesianImage } from "./cartesian-image"
 import { SceneEventHandler, SceneEventType } from "./types"
 import { CartesianVideo } from "./cartesian-video"
 import { SphericalImage } from "./spherical-image"
 import { useImageDimension } from "@/lib/useImageDimension"
 
-export const Renderer = ({
+export const SceneRenderer = ({
   rendered,
-  onUserAction,
-  onUserHover,
+  onEvent,
   isLoading,
   game,
   engine,
   debug
 }: {
   rendered: RenderedScene
-  onUserAction: (actionnable: string) => void
-  onUserHover: (actionnable: string) => void
+  onEvent: (event: SceneEvent, actionnable?: string) => void
   isLoading: boolean
   game: Game
   engine: Engine
@@ -69,8 +67,7 @@ export const Renderer = ({
 
   const getSegmentAt = (x: number, y: number): ImageSegment => {
     if (!contextRef.current) throw new Error("Unable to get context from canvas");
-    if (!rendered.maskUrl) throw new Error("Mask is undefined");
-
+    
     let closestSegment: ImageSegment = {
       id: 0,
       box: [],
@@ -109,7 +106,8 @@ export const Renderer = ({
   // note: coordinates must be between 0 and 1
   const handleMouseEvent: SceneEventHandler = async (type: SceneEventType, relativeX: number, relativeY: number) => {
     if (!contextRef.current) return; // Return early if mask image has not been loaded yet
-  
+    if (!rendered.maskUrl) return;
+    
     if (isLoading) {
       // we ignore all user interactions
       return
@@ -119,7 +117,7 @@ export const Renderer = ({
     // so if we click anywhere bug there are no segments,
     // we inform the rest of the app by passing nothing
     if (type === "click" && rendered.segments.length == 0) {
-      onUserAction("nothing, to trigger a scene reload")
+      onEvent("ClickOnNothing")
       return
     }
 
@@ -144,12 +142,16 @@ export const Renderer = ({
         return
       }
       console.log("User clicked on " + newSegment.label)
-      onUserAction(actionnable)
+      onEvent("ClickOnActionnable", actionnable)
     } else {
       // only trigger hover events if there are segments,
       // otherwise it's best to stay silent
       if (rendered.segments.length) {
-        onUserHover(actionnable)
+        if (actionnable) {
+          onEvent("HoveringActionnable", actionnable)
+        } else {
+          onEvent("HoveringNothing")
+        }
       }
     }
   };
@@ -216,7 +218,7 @@ export const Renderer = ({
       </div>
 
       {isLoading
-      ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8">
+      ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8 z-50">
           <ProgressBar
             text="⌛"
             progressPercentage={progressPercent}

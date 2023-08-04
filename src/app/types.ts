@@ -38,7 +38,17 @@ export interface ImageSegment {
   score: number 
 }
 
-export type RenderedSceneStatus = 'pending' | 'completed' | 'error'
+export type RenderedSceneStatus =
+  | "pending"
+  | "completed"
+  | "error"
+
+export type SceneEvent =
+  | "HoveringNothing"
+  | "HoveringActionnable"
+  | "ClickOnNothing"
+  | "ClickOnActionnable"
+
 export interface RenderedScene {
   renderId: string
   status: RenderedSceneStatus
@@ -46,4 +56,22 @@ export interface RenderedScene {
   error: string
   maskUrl: string
   segments: ImageSegment[]
+}
+
+export type InventoryEvent =
+  | "Grabbing" // grabbed from the inventory, the item is flying over nothing
+  | "HoverAnItem" // hover an item, without dragging it
+  | "ClickOnItem" // click on an item, without dragging it
+  | "HoveringTheScene" // the item is hover the scene, but not on an actionnable
+  | "HoveringActionnable" // the item is hover a scene actionnable, ready to be dropped
+  | "DroppedOnActionnable" // the item has been dropped on a scene actionnable
+  | "HoveringAnotherItem" // the item is hover another inventory item, ready to be dropped
+  | "DroppedOnAnotherItem" // the item has been dropped on another inventory item
+  | "DroppedBackToInventory" // the drag & drop is cancelled, the item is back in the inventory
+
+export interface InventoryItem {
+  name: string
+  title: string
+  caption: string
+  description: string
 }

@@ -1,4 +1,5 @@
 import { EngineType } from "../engines"
+import { InventoryItem } from "../types"
 
 export type GameType =
   | "pirates"
@@ -11,6 +12,7 @@ export type GameType =
   | "flamenco"
   | "tensor"
   | "nexus"
+  | "arizona"
 
 export interface Scene {
   actionnables: string[]
@@ -24,5 +26,6 @@ export interface Game {
   className: string
   initialSituation: string
   initialActionnables: string[]
+  inventory: InventoryItem[]
   getScenePrompt: (situation?: string) => string[]
 }

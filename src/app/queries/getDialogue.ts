@@ -8,19 +8,22 @@ import { predict } from "./predict"
 export const getDialogue = async ({
   game,
   situation = "",
-  actionnable = "",
-  // newDialogue = "",
-  // newActionnables = [],
+  userAction = "",
 }: {
   game: Game;
   situation: string;
-  actionnable: string;
-  // newDialogue: string;
-  // newActionnables: string[];
+  userAction: string;
 }) => {
 
-  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase(game, situation, actionnable)
+  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase({ game, situation, userAction })
 
+  console.log("DEBUG", {
+    game, situation, userAction,
+    currentPrompt,
+    initialPrompt,
+    userSituationPrompt,
+
+  })
   /*
       const basePrompt = initialPrompt !== currentPrompt
   ? `for your information, the initial game panel and scene was: ${initialPrompt}`
@@ -40,8 +43,9 @@ Here is the original scene in which the user was located at first, which will in
         `You are going to receive new information about the current whereabouts and action of the player.`,
         basePrompt,
         `You must imagine a funny response to speak in reaction to what the player did, like in some old point and click video games.`,
-        `Please limit yourself to only a 1 or 2 sentences, please.`,
-        `Also please don't say things like "Well, well, well", it is annoying.`
+        `Please only write between 2 to 3 short sentences, please.`,
+        `Please add a few funny puns and jokes.`,
+        `But please don't say things like "Well, well, well", it is annoying.`
       ].filter(item => item).join("\n")
     },
     {

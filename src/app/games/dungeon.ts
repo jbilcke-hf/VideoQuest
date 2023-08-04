@@ -1,5 +1,6 @@
 import { amatic } from "@/lib/fonts"
 import { Game } from "./types"
+import { InventoryItem } from "../types"
 
 const actions = [
   "not moving",
@@ -46,6 +47,39 @@ const initialActionnables = [
   "fireplace"
 ]
 
+const inventory: InventoryItem[] = [
+  {
+    name: "axe",
+    title: "Axe",
+    caption: "",
+    description: "A good dwarf is nothing without its axe!"
+  },
+  {
+    name: "box",
+    title: "Box",
+    caption: "",
+    description: "Hmm, a mysterious box.."
+  },
+  {
+    name: "candlestick",
+    title: "Candlestick",
+    caption: "",
+    description: "This candlestick looks strange.."
+  },
+  {
+    name: "rabbit-foot",
+    title: "Rabbit foot",
+    caption: "",
+    description: "I hope it will bring me luck!"
+  },
+  {
+    name: "skull",
+    title: "Skull",
+    caption: "",
+    description: "The skull of some poor fellow."
+  },
+]
+
 export const game: Game = {
   title: "Dungeon",
   type: "dungeon",
@@ -53,6 +87,7 @@ export const game: Game = {
   className: amatic.className,
   initialSituation,
   initialActionnables,
+  inventory,
   getScenePrompt: (situation?: string) => [
     `screenshot from adventure videogame`,
     // `first-person footage`,

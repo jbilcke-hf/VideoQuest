@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from "react"
+import { ReactNode, useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 
-import { Renderer } from "@/components/business/renderer"
+import { SceneRenderer } from "@/components/renderer"
 
 import {
   Select,
@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
 import { newRender, getRender } from "./render"
-import { RenderedScene } from "./types"
+import { InventoryEvent, InventoryItem, RenderedScene, SceneEvent } from "./types"
 import { Game, GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
 import { getBackground } from "@/app/queries/getBackground"
@@ -25,6 +25,7 @@ import { getDialogue } from "@/app/queries/getDialogue"
 import { getActionnables } from "@/app/queries/getActionnables"
 import { Engine, EngineType, defaultEngine, engines, getEngine } from "./engines"
 import { normalizeActionnables } from "@/lib/normalizeActionnables"
+import { Inventory } from "@/components/inventory"
 
 const getInitialRenderedScene = (): RenderedScene => ({
   renderId: "",
@@ -55,12 +56,14 @@ export default function Main() {
   const [situation, setSituation] = useState("")
 
   const [dialogue, setDialogue] = useState("")
-  const [hoveredActionnable, setHoveredActionnable] = useState("")
 
   const [isBusy, setBusy] = useState<boolean>(true)
   const busyRef = useRef(true)
 
   const loopRef = useRef<any>(null)
+
+  const [lastEventString, setLastEventString] = useState<string>("")
+  const [lastEvent, setLastEvent] = useState<ReactNode>(null)
 
   const loadNextScene = async (nextSituation?: string, nextActionnables?: string[]) => {
     
@@ -157,8 +160,8 @@ export default function Main() {
     checkRenderedLoop()
   }, [])
 
-  const handleUserAction = async (actionnable: string) => {
-    console.log("user clicked on:", actionnable)
+  const handleClickOnActionnable = async (actionnable: string = "", userAction: string = "") => {
+
     setBusy(busyRef.current = true)
 
     // TODO: ask Llama2 what to do about it
@@ -171,7 +174,7 @@ export default function Main() {
 
       let newDialogue = ""
       try {
-        newDialogue = await getDialogue({ game, situation, actionnable })
+        newDialogue = await getDialogue({ game, situation, userAction })
         // console.log(`newDialogue:`, newDialogue)
         setDialogue(newDialogue)
       } catch (err) {
@@ -180,10 +183,12 @@ export default function Main() {
       }
 
       try {
-        const newActionnables = await getActionnables({ game, situation, actionnable, newDialogue })
+        const newActionnables = await getActionnables({ game, situation, userAction })
         console.log(`newActionnables:`, newActionnables)
 
-        const newBackground = await getBackground({ game, situation, actionnable, newDialogue, newActionnables })
+        // todo rename this background/situation mess
+        // it should be only one word
+        const newBackground = await getBackground({ game, situation, userAction, newActionnables })
         console.log(`newBackground:`, newBackground)
         setSituation(newBackground)
 
@@ -267,6 +272,79 @@ export default function Main() {
     window.location = `${window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()}` as any
   }
 
+  const handleSceneEvent = (event: SceneEvent, actionnable?: string) => {
+    const actionnableName = actionnable || "nothing"
+    let newEvent = null
+    let newEventString = ""
+    if (event === "HoveringNothing") {
+      newEvent = <>🔎 You are looking at: <span className="font-bold">Nothing</span></>
+      newEventString = `User is looking at nothing.`
+    } else if (event === "HoveringActionnable") {
+      newEvent = <>🔎 You are looking at: <span className="font-bold">{actionnableName}</span></>
+      newEventString = `User is looking at "${actionnableName}"`
+    } else if (event === "ClickOnNothing") {
+      newEvent = <>🔎 There is nothing here.</>
+      newEventString = `User clicked on nothing.` 
+    } else if (event === "ClickOnActionnable") {
+      newEvent = <>🔎 You have clicked on <span className="font-bold">{actionnableName}</span></>
+      newEventString = `User has clicked on "${actionnableName}"`
+    }
+
+    if (newEventString && newEventString !== lastEventString) {
+      console.log(newEventString)
+      setLastEventString(newEventString)
+      setLastEvent(newEvent)
+    }
+
+    if (event === "ClickOnActionnable" || event === "ClickOnNothing") {
+      handleClickOnActionnable(actionnable, newEventString)
+    }
+  }
+
+  const askGameMasterForSomeDialogue = async (userAction: string) => {
+    await startTransition(async () => {
+      const game = getGame(gameRef.current)
+      let newDialogue = ""
+      try {
+        newDialogue = await getDialogue({ game, situation, userAction })
+
+        // try to remove whatever hallucination might come up next
+        newDialogue = newDialogue.split("As the player")[0]
+        newDialogue = newDialogue.split("As they use")[0]
+
+        setDialogue(newDialogue)
+      } catch (err) {
+        console.log(`failed to generate dialogue (but it's only a nice to have, so..)`)
+        setDialogue("")
+      }
+    })
+  }
+
+  const handleInventoryEvent = (event: InventoryEvent, item: InventoryItem, target?: InventoryItem) => {
+    let newEvent = null
+    let newEventString = ""
+    if (newEvent === "Grabbing") {
+      newEventString = `Player just grabbed "${item.name}".`
+      newEvent = <>You just grabbed <span className="font-bold">{item.name}</span></>
+    } else if (event === "DroppedOnAnotherItem") {
+      newEventString = `Player is trying to use those object from their own inventory: "${item.name}" with "${target?.name}". What do you think could the combination of ${item.name} and ${target?.name} lead to? Invent a funny outcome!`
+      newEvent = <>You tried to combine <span className="font-bold">"{item.name}"</span> with <span className="font-bold">"{target?.name}"</span></>
+    } else if (event === "ClickOnItem") {
+      newEventString = `Player is inspecting "${item.name}" from their inventory, which has the following description: "${item.description}". Can you invent a funny back story?`
+      newEvent = <>🔎 You are inspecting <span className="font-bold">"{item.name}".</span> {item.description}</>
+    }
+
+    if (newEventString && newEventString !== lastEventString) {
+      console.log(newEventString)
+      setLastEventString(newEventString)
+      setLastEvent(newEvent)
+    }
+
+    if (event === "DroppedOnAnotherItem" || event === "ClickOnItem") {
+      askGameMasterForSomeDialogue(newEventString)
+    }
+  }
+
   // determine when to show the spinner
   const isLoading = isBusy || rendered.status === "pending"
 
@@ -322,32 +400,36 @@ export default function Main() {
         "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
         getGame(gameRef.current).className // apply the game theme
       ].join(" ")}>
-        <div className="flex flex-row">
-          <div className="text-xl mr-2">
-            {rendered.segments.length
-              ? <span>🔎 Try to click on:</span>
-              : <span>⌛ Searching in the scene..</span>
-            }
+        <div className="flex flex-row justify-between">
+          <div className="text-xl px-2">{lastEvent}</div>
+          <div className="flex flex-row">
+            <div className="text-xl mr-2">
+              {rendered.segments.length
+                ? <span>💡 Try to click on:</span>
+                : <span>⌛ Generating clickable areas..</span>
+              }
+            </div>
+            {clickables.map((clickable, i) => 
+            <div key={i} className="flex flex-row text-xl mr-2">
+              <div className="">{clickable}</div>
+              {i < (clickables.length - 1) ? <div>,</div> : null}
+            </div>)}
           </div>
-          {clickables.map((clickable, i) => 
-          <div key={i} className="flex flex-row text-xl mr-2">
-            <div className="">{clickable}</div>
-            {i < (clickables.length - 1) ? <div>,</div> : null}
-          </div>)}
         </div>
-        <div className="text-xl p-4 rounded-xl backdrop-blur-sm bg-white/30">
-          You are looking at: <span className="font-bold">{hoveredActionnable || "nothing"}</span>
-        </div>
-        <Renderer
+        <Inventory game={game} onEvent={handleInventoryEvent} />
+        <SceneRenderer
           rendered={rendered}
-          onUserAction={handleUserAction}
-          onUserHover={setHoveredActionnable}
+          onEvent={handleSceneEvent}
           isLoading={isLoading}
           game={game}
           engine={engine}
           debug={debug}
         />
-        <div className="text-xl rounded-xl backdrop-blur-sm bg-white/30 p-4">{dialogue}</div>
+        <div
+          className="text-xl rounded-xl backdrop-blur-sm bg-white/20 p-4"
+          style={{
+            textShadow: "1px 0px 2px #000000ab"
+          }}>{dialogue}</div>
       </div>
     </div>
   )
