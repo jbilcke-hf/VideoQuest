@@ -307,16 +307,21 @@ export default function Main() {
       let newDialogue = ""
       try {
         newDialogue = await getDialogue({ game, situation, userAction })
-
-        // try to remove whatever hallucination might come up next
-        newDialogue = newDialogue.split("As the player")[0]
-        newDialogue = newDialogue.split("As they use")[0]
-
-        setDialogue(newDialogue)
       } catch (err) {
-        console.log(`failed to generate dialogue (but it's only a nice to have, so..)`)
-        setDialogue("")
+        console.log(`failed to generate dialoguee, let's try again maybe`)
+        try {
+          newDialogue = await getDialogue({ game, situation, userAction: `${userAction}.` })
+        } catch (err) {
+          console.log(`failed to generate dialogue.. again (but it's only a nice to have, so..)`)
+          setDialogue("")
+          return
+        }
       }
+
+      // try to remove whatever hallucination might come up next
+      newDialogue = newDialogue.split("As the player")[0]
+      newDialogue = newDialogue.split("As they use")[0]
+      setDialogue(newDialogue)
     })
   }
 
