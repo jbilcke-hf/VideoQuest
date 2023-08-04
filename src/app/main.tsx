@@ -426,7 +426,7 @@ export default function Main() {
           debug={debug}
         />
         <div
-          className="text-xl rounded-xl backdrop-blur-sm bg-white/20 p-4"
+          className="text-xl rounded-xl backdrop-blur-sm bg-white/10 p-4"
           style={{
             textShadow: "1px 0px 2px #000000ab"
           }}>{dialogue}</div>
