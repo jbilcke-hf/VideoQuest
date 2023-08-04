@@ -52,7 +52,7 @@ const inventory: InventoryItem[] = [
     name: "axe",
     title: "Axe",
     caption: "",
-    description: "A good dwarf is nothing without its axe!"
+    description: "A good dwarf is nothing without his axe!"
   },
   {
     name: "box",
