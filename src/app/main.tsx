@@ -357,7 +357,7 @@ export default function Main() {
     <div
       className="flex flex-col w-full max-w-5xl"
     >
-      <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 dark:border-gray-50 bg-gray-800 dark:bg-gray-800">
+      <div className="flex flex-row w-full justify-between items-center px-2 py-2 border-b-1 border-gray-50 dark:border-gray-50 bg-gray-800 dark:bg-gray-800 text-gray-50 dark:text-gray-50">
         <div className="flex flex-row items-center space-x-3 font-mono">
           <Label className="flex text-sm">Select a story:</Label>
           <Select
