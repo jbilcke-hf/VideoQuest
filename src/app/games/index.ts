@@ -14,6 +14,6 @@ import { game as arizona } from "./arizona"
 
 export const games = { arizona, pirates, city, dungeon, doom, vernian, enchanters, flamenco, pharaoh, tensor, nexus}
 
-export const defaultGame: GameType = "dungeon"
+export const defaultGame: GameType = "vernian"
 
 export const getGame = (type?: GameType) => games[type || defaultGame] || games[defaultGame]
