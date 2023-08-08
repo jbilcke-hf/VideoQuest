@@ -44,6 +44,7 @@ export const getSound = async ({
         `You must imagine a sound effect in reaction to the player action.`,
         `Here are some examples, but don't copy them verbatim:\n`,
         `- "An excited crowd cheering at a sports game"\n`,
+        `- "A wooden door opens"\n`,
         `- "A cat is meowing for attention"\n`,
         `- "Birds singing sweetly in a blooming garden"\n`,
         `- "A modern synthesizer creating futuristic soundscapes"\n`,
@@ -64,11 +65,11 @@ export const getSound = async ({
   try {
     result = await predict(prompt)
   } catch (err) {
-    console.log(`prediction of the dialogue failed, trying again..`)
+    console.log(`prediction of the sound prompt failed, trying again..`)
     try {
       result = await predict(prompt)
     } catch (err) {
-      console.error(`prediction of the dialogue failed again!`)
+      console.error(`prediction of the sound prompt failed again!`)
       throw new Error(`failed to generate the dialogue ${err}`)
     }
   }
