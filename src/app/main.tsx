@@ -315,8 +315,8 @@ export default function Main() {
         newEvent = <>🔎 You are holding <span className="font-bold">&quot;{item.name}&quot;</span> and looking around, wondering how to use it.</>
         newEventString = `User is holding "${item.name}" from their inventory and wonder how they can use it.`
       } else {
-        newEvent = <>🔎 You are looking at the scene, looking for clues.</>
-        newEventString = `User is looking at the scene, looking for clues.`
+        newEvent = <>🔎 You are looking at the scene, searching for clues.</>
+        newEventString = `User is looking at the scene, searching for clues.`
       }
     } else if (event === "HoveringActionnable") {
       if (item) {

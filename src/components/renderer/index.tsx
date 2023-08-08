@@ -11,6 +11,8 @@ import { SphericalImage } from "./spherical-image"
 import { useImageDimension } from "@/lib/useImageDimension"
 import { useDrop } from "react-dnd"
 import { formatActionnableName } from "@/lib/formatActionnableName"
+import { SceneTooltip } from "./scene-tooltip"
+import { SceneMenu } from "./scene-menu"
 
 export const SceneRenderer = ({
   rendered,
@@ -28,6 +30,7 @@ export const SceneRenderer = ({
   debug: boolean
 }) => {
   const timeoutRef = useRef<any>()
+  const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
@@ -36,6 +39,17 @@ export const SceneRenderer = ({
   const progressRef = useRef(0)
   const isLoadingRef = useRef(isLoading)
   const maskDimension = useImageDimension(rendered.maskUrl)
+
+  const [isHover, setHover] = useState(false)
+
+  const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const menuTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const [isTooltipVisible, setTooltipVisible] = useState(false)
+  const [isMenuVisible, setMenuVisible] = useState(false)
+  const [tooltipX, setTooltipX] = useState(0)
+  const [tooltipY, setTooltipY] = useState(0)
+  const [menuX, setMenuX] = useState(0)
+  const [menuY, setMenuY] = useState(0)
 
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: "item",
@@ -122,19 +136,21 @@ export const SceneRenderer = ({
 
   // note: coordinates must be between 0 and 1
   const handleMouseEvent: MouseEventHandler = async (type: MouseEventType, relativeX: number, relativeY: number) => {
-    if (!contextRef.current) return; // Return early if mask image has not been loaded yet
-    if (!rendered.maskUrl) return;
     
-    if (isLoading) {
-      // we ignore all user interactions
-      return
-    }
+    const noMenu = !containerRef.current
+    const noContext = !contextRef.current
+    const noSegmentationMask = !rendered.maskUrl
+    const noSegmentsToClickOn = rendered.segments.length == 0
 
-    // sometimes we generate an image, but the segmentation fails
-    // so if we click anywhere bug there are no segments,
-    // we inform the rest of the app by passing nothing
-    if (type === "click" && rendered.segments.length == 0) {
-      onEvent("ClickOnNothing")
+    const mustAbort =
+     noMenu
+     || noContext
+     || noSegmentationMask
+     || noSegmentsToClickOn
+     || isLoading
+
+    if (mustAbort) {
+      // if (type === "click") { onEvent("ClickOnNothing") }
       return
     }
 
@@ -154,21 +170,77 @@ export const SceneRenderer = ({
       setActionnable(actionnableRef.current = newSegment.label)
     }
 
+    const container = containerRef.current
+    const containerBox = container.getBoundingClientRect()
+
+    const absoluteMouseX = containerBox.left + relativeX * container.clientWidth
+    const absoluteMouseY = containerBox.top + relativeY * container.clientHeight
+    
+    clearTimeout(tooltipTimeoutRef.current)
+    clearTimeout(menuTimeoutRef.current)
+    setTooltipVisible(false)
+    setMenuVisible(false)
+    setTooltipX(absoluteMouseX)
+    setTooltipY(absoluteMouseY)
+    setMenuX(absoluteMouseX)
+    setMenuY(absoluteMouseY)
+
+    
     if (type === "click") {
+      setMenuVisible(false)
       if (!newSegment.label) {
+        // setMenuVisible(false)
         return
       }
+
+      setTooltipVisible(true)
+      setMenuVisible(true)
+
       console.log("User clicked on " + newSegment.label)
       onEvent("ClickOnActionnable", actionnable)
-    } else {
-      // only trigger hover events if there are segments,
-      // otherwise it's best to stay silent
-      if (rendered.segments.length) {
-        if (actionnable) {
-          onEvent("HoveringActionnable", actionnable)
-        } else {
-          onEvent("HoveringNothing")
-        }
+    } else { // hover
+      if (actionnable) {
+        setHover(true)
+
+        tooltipTimeoutRef.current = setTimeout(() => {
+          if (tooltipTimeoutRef.current) {
+            clearTimeout(tooltipTimeoutRef.current)
+            tooltipTimeoutRef.current = undefined
+            setTooltipVisible(true)
+          }
+        }, 400)
+
+        menuTimeoutRef.current = setTimeout(() => {
+          if (menuTimeoutRef.current) {
+            clearTimeout(menuTimeoutRef.current)
+            menuTimeoutRef.current = undefined
+            setMenuVisible(true)
+          }
+        }, 500)
+
+        onEvent("HoveringActionnable", actionnable)
+      } else {
+        setHover(false)
+        onEvent("HoveringNothing")
+
+        /*
+        tooltipTimeoutRef.current = setTimeout(() => {
+          if (tooltipTimeoutRef.current) {
+            setTooltipVisible(false)
+            clearTimeout(tooltipTimeoutRef.current)
+            tooltipTimeoutRef.current = undefined
+          }
+        }, 500)
+
+        menuTimeoutRef.current = setTimeout(() => {
+          if (menuTimeoutRef.current) {
+            setMenuVisible(false)
+            clearTimeout(menuTimeoutRef.current)
+            menuTimeoutRef.current = undefined
+          }
+        }, 500)
+        */
+
       }
     }
   };
@@ -200,17 +272,20 @@ export const SceneRenderer = ({
   return (
     <div className="w-full pt-2" ref={drop}>
       <div
+        ref={containerRef}
         className={[
           "relative border-2 border-gray-50 rounded-xl overflow-hidden min-h-[512px]",
           engine.type === "cartesian_video"
           || engine.type === "cartesian_image"
-            ? " w-full" // w-[1024px] h-[512px]"
+            ? "w-full" // w-[1024px] h-[512px]"
             : "w-full",
             
           isLoading
             ? "cursor-wait"
             : actionnable
-            ? "cursor-pointer"
+            ? isHover
+            ? "cursor-crosshair"
+            : "cursor-crosshair"
             : ""
           ].join(" ")}>
         {engine.type === "cartesian_video"
@@ -233,6 +308,22 @@ export const SceneRenderer = ({
         }
 
       </div>
+
+      <SceneTooltip
+        isVisible={isTooltipVisible && !isLoading}
+        x={tooltipX}
+        y={tooltipY}>
+        {actionnable}
+      </SceneTooltip>
+
+      {/*
+      <SceneMenu
+        actions={["Go here", "Interact"]}
+        isVisible={isMenuVisible && !isLoading}
+        x={menuX}
+        y={menuY}
+      />
+      */}
 
       {isLoading
       ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8 z-50">

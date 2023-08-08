@@ -31,8 +31,8 @@ export const getDialogue = async ({
   */
 
   const basePrompt = initialPrompt !== currentPrompt
-    ? `You must imagine the most plausible next dialogue line from the game master, based on where the player was located before and is now, and also what the player did before and are doing now.
-Here is the original scene in which the user was located at first, which will inform you about the general settings to follow (you must respect this): "${initialPrompt}".`
+    ? `You must imagine the most plausible next dialogue line from the game master, based on current and past situation.
+Here is the original situation, which will inform you about the general game mood to follow (you must respect this): "${initialPrompt}".`
     : ""
 
   const prompt = createLlamaPrompt([

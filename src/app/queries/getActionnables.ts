@@ -6,6 +6,27 @@ import { getBase } from "./getBase"
 import { predict } from "./predict"
 import { normalizeActionnables } from "@/lib/normalizeActionnables"
 
+const parseActionnablesOrThrow = (input: string) => {
+  let result: string[] = []
+  try {
+    result = parseJsonList(input)
+
+    if (!result.length) {
+      throw new Error("no actionnables")
+    }
+  } catch (err) {
+    console.log("failed to find a valid JSON! attempting method 2..")
+
+    const sanitized = input.replaceAll("[", "").replaceAll("]", "")
+    result = (JSON.parse(`[${sanitized}]`) as string[])
+
+    if (!result.length) {
+      throw new Error("no actionnables")
+    }
+  }
+  return result
+}
+
 export const getActionnables = async ({
   game,
   situation = "",
@@ -39,43 +60,21 @@ export const getActionnables = async ({
   ])
 
   let rawStringOutput = ""
-  
-  try {
-    rawStringOutput = await predict(prompt)
-  } catch (err) {
-    console.log(`prediction of the actionnables failed, trying again..`)
-    try {
-      rawStringOutput = await predict(prompt)
-    } catch (err) {
-      console.error(`prediction of the actionnables failed again!`)
-      throw new Error(`failed to generate the actionnables ${err}`)
-    }
-  }
-  
   let result: string[] = []
 
   try {
-    result = parseJsonList(rawStringOutput)
-
-    if (!result.length) {
-      throw new Error("no actionnables")
-    }
+    rawStringOutput = await predict(prompt)
+    result = parseActionnablesOrThrow(rawStringOutput)
   } catch (err) {
-    console.log("failed to find a valid JSON! attempting method 2..")
-
+    console.log(`prediction of the actionnables failed, trying again..`)
     try {
-      const sanitized = rawStringOutput.replaceAll("[", "").replaceAll("]", "")
-      result = (JSON.parse(`[${sanitized}]`) as string[])
-
-      if (!result.length) {
-        throw new Error("no actionnables")
-      }
+      rawStringOutput = await predict(prompt+".")
+      result = parseActionnablesOrThrow(rawStringOutput)
     } catch (err) {
-      console.log("failed to repair and recover a valid JSON! Using a generic fallback..")
-      
-      // throw new Error("failed to parse the actionnables")
+      console.error(`prediction of the actionnables failed again! going to use default value`)
+      console.log("for reference, rawStringOutput was: ", rawStringOutput)
     }
   }
-
+  
   return normalizeActionnables(result)
 }
