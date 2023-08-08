@@ -3,11 +3,11 @@ import { Game } from "@/app/games/types"
 export const getBase = ({
   game,
   situation = "",
-  userAction = "",
+  lastEvent = "",
 }: {
   game: Game;
   situation: string;
-  userAction: string;
+  lastEvent: string;
 }) => {
   const initialPrompt = [...game.getScenePrompt()].join(", ")
 
@@ -17,7 +17,7 @@ export const getBase = ({
 
   const userSituationPrompt = [
     `Player is currently in "${currentPrompt}".`,
-    userAction
+    lastEvent
   ].join(" ")
 
   return { initialPrompt, currentPrompt, userSituationPrompt }

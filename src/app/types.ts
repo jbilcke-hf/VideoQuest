@@ -46,9 +46,11 @@ export type RenderedSceneStatus =
 export type SceneEvent =
   | "HoveringNothing"
   | "HoveringActionnable"
+  // | "ItemIsOverActionnable"
   | "ClickOnNothing"
   | "ClickOnActionnable"
 
+  
 export interface RenderedScene {
   renderId: string
   status: RenderedSceneStatus
@@ -69,9 +71,23 @@ export type InventoryEvent =
   | "DroppedOnAnotherItem" // the item has been dropped on another inventory item
   | "DroppedBackToInventory" // the drag & drop is cancelled, the item is back in the inventory
 
-export interface InventoryItem {
+  export interface InventoryItem {
+    name: string
+    title: string
+    caption: string
+    description: string
+  }
+
+  export interface DropZoneTarget {
+    type: "InventoryItem" | "Actionnable"
+    name: string
+    title?: string
+    caption?: string
+    description?: string
+  }
+
+export type OnInventoryEvent = (event: InventoryEvent, item: InventoryItem, target?: {
   name: string
-  title: string
-  caption: string
-  description: string
-}
+  title?: string
+  description?: string
+ }) => void

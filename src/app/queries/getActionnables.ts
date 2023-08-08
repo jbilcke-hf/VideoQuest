@@ -9,14 +9,14 @@ import { normalizeActionnables } from "@/lib/normalizeActionnables"
 export const getActionnables = async ({
   game,
   situation = "",
-  userAction = "",
+  lastEvent = "",
 }: {
   game: Game;
   situation: string;
-  userAction: string;
+  lastEvent: string;
 }) => {
 
-  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase({ game, situation, userAction })
+  const { currentPrompt, initialPrompt, userSituationPrompt } = getBase({ game, situation, lastEvent })
 
   const basePrompt = initialPrompt !== currentPrompt
     ? `Here is some context information about the initial scene: ${initialPrompt}`

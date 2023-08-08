@@ -1,5 +1,5 @@
-import { useRef } from "react"
-import { SceneEventHandler } from "./types"
+import { useEffect, useRef } from "react"
+import { MouseEventHandler } from "./types"
 import { RenderedScene } from "@/app/types"
 
 export function CartesianImage({
@@ -9,12 +9,53 @@ export function CartesianImage({
   debug
 }: {
   rendered: RenderedScene
-  onEvent: SceneEventHandler
+  onEvent: MouseEventHandler
   className?: string
   debug?: boolean
 }) {
 
   const ref = useRef<HTMLImageElement>(null)
+
+  const cacheRef = useRef("")
+  useEffect(() => {
+    const listener = (e: DragEvent) => {
+      if (!ref.current) { return }
+
+      // TODO: check if we are currently dragging an object
+      // if yes, then we should check if clientX and clientY are matching the 
+      const boundingRect = ref.current.getBoundingClientRect()
+
+      // abort if we are not currently dragging over our display area
+      if (e.clientX < boundingRect.left) { return }
+      if (e.clientX > (boundingRect.left + boundingRect.width)) { return }
+      if (e.clientY < boundingRect.top) { return }
+      if (e.clientY > (boundingRect.top + boundingRect.height)) { return }
+
+      const containerX = e.clientX - boundingRect.left
+      const containerY = e.clientY - boundingRect.top
+    
+      const relativeX = containerX / boundingRect.width
+      const relativeY = containerY / boundingRect.height
+
+      const key = `${relativeX},${relativeY}`
+
+      // to avoid use
+      if (cacheRef.current === key) {
+        return
+      }
+      // console.log(`DRAG: calling onEvent("hover", ${relativeX}, ${relativeY})`)
+
+      cacheRef.current = key
+      onEvent("hover", relativeX, relativeY)
+    }
+
+    document.addEventListener('drag', listener)
+
+    return () => {
+      document.removeEventListener('drag', listener)
+    }
+  }, [onEvent])
+  
   const handleEvent = async (event: React.MouseEvent<HTMLImageElement, MouseEvent>, isClick: boolean) => {
 
     if (!ref.current) {
@@ -35,6 +76,7 @@ export function CartesianImage({
     const relativeY = containerY / boundingRect.height
 
     const eventType = isClick ? "click" : "hover"
+
     onEvent(eventType, relativeX, relativeY)
   }
 

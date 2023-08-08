@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 
-import { ImageSegment, RenderedScene, SceneEvent } from "@/app/types"
+import { DropZoneTarget, ImageSegment, RenderedScene, SceneEvent } from "@/app/types"
 import { ProgressBar } from "../misc/progress"
 import { Game } from "@/app/games/types"
 import { Engine } from "@/app/engines"
 import { CartesianImage } from "./cartesian-image"
-import { SceneEventHandler, SceneEventType } from "./types"
+import { MouseEventHandler, MouseEventType } from "./types"
 import { CartesianVideo } from "./cartesian-video"
 import { SphericalImage } from "./spherical-image"
 import { useImageDimension } from "@/lib/useImageDimension"
+import { useDrop } from "react-dnd"
+import { formatActionnableName } from "@/lib/formatActionnableName"
 
 export const SceneRenderer = ({
   rendered,
@@ -16,7 +18,7 @@ export const SceneRenderer = ({
   isLoading,
   game,
   engine,
-  debug
+  debug,
 }: {
   rendered: RenderedScene
   onEvent: (event: SceneEvent, actionnable?: string) => void
@@ -29,10 +31,25 @@ export const SceneRenderer = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
+  const actionnableRef = useRef<string>("")
   const [progressPercent, setProcessPercent] = useState(0)
   const progressRef = useRef(0)
   const isLoadingRef = useRef(isLoading)
   const maskDimension = useImageDimension(rendered.maskUrl)
+
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: "item",
+    drop: (): DropZoneTarget => ({
+      type: "Actionnable",
+      name: actionnable,
+      title: formatActionnableName(actionnable),
+      description: ""
+    }),
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  })
 
   useEffect(() => {
     if (!rendered.maskUrl) {
@@ -104,7 +121,7 @@ export const SceneRenderer = ({
   }
 
   // note: coordinates must be between 0 and 1
-  const handleMouseEvent: SceneEventHandler = async (type: SceneEventType, relativeX: number, relativeY: number) => {
+  const handleMouseEvent: MouseEventHandler = async (type: MouseEventType, relativeX: number, relativeY: number) => {
     if (!contextRef.current) return; // Return early if mask image has not been loaded yet
     if (!rendered.maskUrl) return;
     
@@ -134,7 +151,7 @@ export const SceneRenderer = ({
       }
 
       // update the actionnable immediately, so we can show the hand / finger cursor pointer
-      setActionnable(newSegment.label)
+      setActionnable(actionnableRef.current = newSegment.label)
     }
 
     if (type === "click") {
@@ -181,7 +198,7 @@ export const SceneRenderer = ({
   }, [isLoading, rendered.assetUrl, engine?.type])
 
   return (
-    <div className="w-full pt-2">
+    <div className="w-full pt-2" ref={drop}>
       <div
         className={[
           "relative border-2 border-gray-50 rounded-xl overflow-hidden min-h-[512px]",

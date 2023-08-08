@@ -5,7 +5,7 @@ import { getBase } from "./getBase"
 import { predict } from "./predict"
 
 
-export const getDialogue = async ({
+export const getSound = async ({
   game,
   situation = "",
   lastEvent = "",
@@ -31,8 +31,7 @@ export const getDialogue = async ({
   */
 
   const basePrompt = initialPrompt !== currentPrompt
-    ? `You must imagine the most plausible next dialogue line from the game master, based on where the player was located before and is now, and also what the player did before and are doing now.
-Here is the original scene in which the user was located at first, which will inform you about the general settings to follow (you must respect this): "${initialPrompt}".`
+    ? `Here is the original scene in which the user was located at first, which will inform you about the general settings to follow (you must respect this): "${initialPrompt}".`
     : ""
 
   const prompt = createLlamaPrompt([
@@ -42,10 +41,16 @@ Here is the original scene in which the user was located at first, which will in
         `You are the AI game master of a role video game.`,
         `You are going to receive new information about the current whereabouts and action of the player.`,
         basePrompt,
-        `You must imagine a funny response to speak in reaction to what the player did, like in some old point and click video games.`,
-        `Please only write between 2 to 3 short sentences, please.`,
-        `Please add a few funny puns and jokes.`,
-        `But please don't say things like "Well, well, well" or "Ah, the classic combination of" it is annoying.`
+        `You must imagine a sound effect in reaction to the player action.`,
+        `Here are some examples, but don't copy them verbatim:\n`,
+        `- "An excited crowd cheering at a sports game"\n`,
+        `- "A cat is meowing for attention"\n`,
+        `- "Birds singing sweetly in a blooming garden"\n`,
+        `- "A modern synthesizer creating futuristic soundscapes"\n`,
+        `- "The vibrant beat of Brazilian samba drums"\n`,
+        `Here are some more instructions, to enhance the Qqality of your generated audio:`,
+        `1. Try to use more adjectives to describe your sound. For example: "A man is speaking clearly and slowly in a large room" is better than "A man is speaking".\n`,
+        `2. It's better to use general terms like 'man' or 'woman' instead of specific names for individuals or abstract objects that humans may not be familiar with, such as 'mummy'.\n`
       ].filter(item => item).join("\n")
     },
     {

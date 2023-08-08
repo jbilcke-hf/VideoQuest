@@ -1,26 +1,39 @@
-
+import { useEffect, useRef } from "react"
 import Image from "next/image"
 import { useDrag, useDrop } from "react-dnd"
 
 import { Game } from "@/app/games/types"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
-import { InventoryEvent, InventoryItem } from "@/app/types"
-import { useEffect } from "react"
+import { DropZoneTarget, InventoryEvent, InventoryItem, OnInventoryEvent } from "@/app/types"
 
-type DropResult = InventoryItem
+import { store } from "@/app/store"
 
 export function DraggableItem({ game, item, onEvent }: {
-  game: Game;
-  item: InventoryItem;
-  onEvent: (event: InventoryEvent, item: InventoryItem, target?: InventoryItem) => void
+  game: Game
+  item: InventoryItem
+  onEvent: OnInventoryEvent
 }) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "item",
     item,
     end: (item, monitor) => {
-      const dropResult = monitor.getDropResult<InventoryItem>()
-      if (item && dropResult) {
-        onEvent("DroppedOnAnotherItem", item, dropResult)
+      const target = monitor.getDropResult<DropZoneTarget>()
+      if (item && target) {
+        if ( target.type === "InventoryItem" && item.name === target.name) {
+          // user is trying to drop the item on itself.. that's not possible
+          return
+        }
+        onEvent(
+          target.type === "Actionnable"
+            ? "DroppedOnActionnable"
+            : "DroppedOnAnotherItem",
+          item,
+          {
+            name: target.name,
+            title: target.title,
+            description: target.description
+          }
+        )
       }
     },
     collect: (monitor) => ({
@@ -31,7 +44,12 @@ export function DraggableItem({ game, item, onEvent }: {
 
   const [{ isOver, canDrop }, drop] = useDrop({
     accept: "item",
-    drop: () => (item),
+    drop: (): DropZoneTarget => ({
+      type: "InventoryItem",
+      name: item.name,
+      title: item.title,
+      description: item.description
+    }),
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
@@ -40,8 +58,10 @@ export function DraggableItem({ game, item, onEvent }: {
 
   useEffect(() => {
     if (isDragging) {
+      store.currentlyDraggedItem = item
       onEvent("Grabbing", item)
     } else {
+      store.currentlyDraggedItem = undefined
       onEvent("DroppedBackToInventory", item)
     }
   }, [isDragging])

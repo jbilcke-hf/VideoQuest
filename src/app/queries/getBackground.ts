@@ -7,12 +7,12 @@ import { predict } from "./predict"
 export const getBackground = async ({
   game,
   situation = "",
-  userAction = "",
+  lastEvent = "",
   newActionnables = [],
 }: {
   game: Game;
   situation: string;
-  userAction: string;
+  lastEvent: string;
   newActionnables: string[],
 }) => {
 
@@ -23,7 +23,7 @@ export const getBackground = async ({
   } = getBase({
     game,
     situation,
-    userAction
+    lastEvent
   })
 
   const basePrompt = initialPrompt !== currentPrompt
@@ -38,9 +38,9 @@ Here is the original scene in which the user was located at first, which will in
         `You are the AI game master of a role video game.`,
         basePrompt,
         `You are going to receive new information about the current whereabouts of the player.`,
-        `Please write a caption for the next plausible scene to display in intricate details: the environment, lights, era, characters, objects, textures, light etc.`,
+        `Please write a photo caption for the next plausible scene to display in intricate details: the environment, lights, era, characters, objects, textures, light etc.`,
         `You MUST include the following important objects that the user can click on: ${newActionnables}.`,
-        `Be straight to the point, and do not say things like "As the player clicks on.." or "the scene shifts to" (the best is not not mention the player at all)`
+        `As this is a caption be synthetic: describe things, but don't comment on them. Be straight to the point, and do not say things like "As the player clicks on.." or "the scene shifts to" (the best is not not mention the player at all)`
       ].filter(item => item).join("\n")
     },
     {

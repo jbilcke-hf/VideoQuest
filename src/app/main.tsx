@@ -2,7 +2,8 @@
 
 import { ReactNode, useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-
+import { DndProvider } from "react-dnd"
+import { HTML5Backend } from "react-dnd-html5-backend"
 
 import { SceneRenderer } from "@/components/renderer"
 
@@ -17,7 +18,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 
 import { newRender, getRender } from "./render"
-import { InventoryEvent, InventoryItem, RenderedScene, SceneEvent } from "./types"
+import { InventoryEvent, InventoryItem, OnInventoryEvent, RenderedScene, SceneEvent } from "./types"
 import { Game, GameType } from "./games/types"
 import { defaultGame, games, getGame } from "./games"
 import { getBackground } from "@/app/queries/getBackground"
@@ -26,6 +27,8 @@ import { getActionnables } from "@/app/queries/getActionnables"
 import { Engine, EngineType, defaultEngine, engines, getEngine } from "./engines"
 import { normalizeActionnables } from "@/lib/normalizeActionnables"
 import { Inventory } from "@/components/inventory"
+import { store } from "./store"
+import { defaultActionnables } from "@/lib/defaultActionnables"
 
 const getInitialRenderedScene = (): RenderedScene => ({
   renderId: "",
@@ -56,6 +59,12 @@ export default function Main() {
   const [situation, setSituation] = useState("")
 
   const [dialogue, setDialogue] = useState("")
+
+  /*
+  const [grabbedItem, setGrabbedItem] = useState<InventoryItem>()
+  const grabbedItemRef = useRef<InventoryItem | undefined>()
+  grabbedItemRef.current = grabbedItem
+  */
 
   const [isBusy, setBusy] = useState<boolean>(true)
   const busyRef = useRef(true)
@@ -88,6 +97,8 @@ export default function Main() {
       console.log("got the first version of our scene!", newRendered)
 
       // detect if type game type changed while we were busy
+      // note that currently we reload the whol page when tha happens,
+      // so this code isn't that useful
       if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
         return
@@ -160,35 +171,54 @@ export default function Main() {
     checkRenderedLoop()
   }, [])
 
-  const handleClickOnActionnable = async (actionnable: string = "", userAction: string = "") => {
 
-    setBusy(busyRef.current = true)
+  const askGameMasterForEpicDialogue = async (lastEvent: string) => {
 
-    // TODO: ask Llama2 what to do about it
-    // we need a frame and some actionnables,
-    // perhaps even some music or sound effects
+    await startTransition(async () => {
+      // const game = getGame(gameRef.current)
+      let newDialogue = ""
+      try {
+        newDialogue = await getDialogue({ game, situation, lastEvent })
+      } catch (err) {
+        console.log(`failed to generate dialogue, let's try again maybe`)
+        try {
+          newDialogue = await getDialogue({ game, situation, lastEvent: `${lastEvent}.` })
+        } catch (err) {
+          console.log(`failed to generate dialogue.. again (but it's only a nice to have, so..)`)
+          setDialogue("")
+          return
+        }
+      }
+
+      // try to remove whatever hallucination might come up next
+      newDialogue = newDialogue.split("As the player")[0]
+      newDialogue = newDialogue.split("As they use")[0]
+      setDialogue(newDialogue)
+    })
+  }
+
+  const askGameMasterForEpicBackground = async (lastEvent: string = "") => {
 
     await startTransition(async () => {
 
-      const game = getGame(gameRef.current)
+      setBusy(busyRef.current = true) // this will be set to false once the scene finish loading
 
-      let newDialogue = ""
+      // const game = getGame(gameRef.current)
+
+      let newActionnables = [...defaultActionnables]
+
       try {
-        newDialogue = await getDialogue({ game, situation, userAction })
-        // console.log(`newDialogue:`, newDialogue)
-        setDialogue(newDialogue)
+        newActionnables = await getActionnables({ game, situation, lastEvent })
+        console.log(`newActionnables:`, newActionnables)
       } catch (err) {
-        console.log(`failed to generate dialogue (but it's only a nice to have, so..)`)
-        setDialogue("")
+        console.log(`failed to generate actionnables, using default value`)
       }
 
       try {
-        const newActionnables = await getActionnables({ game, situation, userAction })
-        console.log(`newActionnables:`, newActionnables)
 
         // todo rename this background/situation mess
         // it should be only one word
-        const newBackground = await getBackground({ game, situation, userAction, newActionnables })
+        const newBackground = await getBackground({ game, situation, lastEvent, newActionnables })
         console.log(`newBackground:`, newBackground)
         setSituation(newBackground)
 
@@ -197,10 +227,11 @@ export default function Main() {
 
           // todo we could also use useEffect
       } catch (err) {
-        console.error(`failed to get one of the mandatory entites: ${err}`)
+        console.error(`failed to get the scene: ${err}`)
       }
     })
   }
+
 
   const clickables = Array.from(new Set(rendered.segments.map(s => s.label)).values())
 
@@ -273,15 +304,28 @@ export default function Main() {
   }
 
   const handleSceneEvent = (event: SceneEvent, actionnable?: string) => {
+    // TODO use Zustand
+    const item = store.currentlyDraggedItem
+
     const actionnableName = actionnable || "nothing"
     let newEvent = null
     let newEventString = ""
     if (event === "HoveringNothing") {
-      newEvent = <>🔎 You are looking at: <span className="font-bold">Nothing</span></>
-      newEventString = `User is looking at nothing.`
+      if (item) {
+        newEvent = <>🔎 You are holding <span className="font-bold">&quot;{item.name}&quot;</span> and looking around, wondering how to use it.</>
+        newEventString = `User is holding "${item.name}" from their inventory and wonder how they can use it.`
+      } else {
+        newEvent = <>🔎 You are looking at the scene, looking for clues.</>
+        newEventString = `User is looking at the scene, looking for clues.`
+      }
     } else if (event === "HoveringActionnable") {
-      newEvent = <>🔎 You are looking at: <span className="font-bold">{actionnableName}</span></>
-      newEventString = `User is looking at "${actionnableName}"`
+      if (item) {
+        newEvent = <>🔎 You are holding <span className="font-bold">&quot;{item.name}&quot;</span>, waving it over <span className="font-bold">&quot;{actionnableName}&quot;</span></>
+        newEventString = `User is holding "${item.name}" from their inventory and wonder if they can use it on "${actionnableName}"`
+      } else {
+        newEvent = <>🔎 You are looking at <span className="font-bold">&quot;{actionnableName}&quot;</span></>
+        newEventString = `User is looking at "${actionnableName}"`
+      }
     } else if (event === "ClickOnNothing") {
       newEvent = <>🔎 There is nothing here.</>
       newEventString = `User clicked on nothing.` 
@@ -297,43 +341,39 @@ export default function Main() {
     }
 
     if (event === "ClickOnActionnable" || event === "ClickOnNothing") {
-      handleClickOnActionnable(actionnable, newEventString)
+      askGameMasterForEpicDialogue(newEventString)
+      askGameMasterForEpicBackground(newEventString)
     }
   }
 
-  const askGameMasterForSomeDialogue = async (userAction: string) => {
-    await startTransition(async () => {
-      const game = getGame(gameRef.current)
-      let newDialogue = ""
-      try {
-        newDialogue = await getDialogue({ game, situation, userAction })
-      } catch (err) {
-        console.log(`failed to generate dialoguee, let's try again maybe`)
-        try {
-          newDialogue = await getDialogue({ game, situation, userAction: `${userAction}.` })
-        } catch (err) {
-          console.log(`failed to generate dialogue.. again (but it's only a nice to have, so..)`)
-          setDialogue("")
-          return
-        }
-      }
-
-      // try to remove whatever hallucination might come up next
-      newDialogue = newDialogue.split("As the player")[0]
-      newDialogue = newDialogue.split("As they use")[0]
-      setDialogue(newDialogue)
-    })
-  }
-
-  const handleInventoryEvent = (event: InventoryEvent, item: InventoryItem, target?: InventoryItem) => {
+  const handleInventoryEvent: OnInventoryEvent = async (event, item, target) => {
     let newEvent = null
     let newEventString = ""
     if (newEvent === "Grabbing") {
       newEventString = `Player just grabbed "${item.name}".`
-      newEvent = <>You just grabbed <span className="font-bold">{item.name}</span></>
+      newEvent = <>You just grabbed <span className="font-bold">&quot;{item.name}&quot;</span></>
+    } else if (event === "DroppedOnActionnable") {
+      newEventString = [
+        `Player is trying to use`,
+        `"${item.name}"`,
+        item.description ? `(described as: "${item.description}")` : "",
+        `from their inventory on "${target?.title}"`,
+        target?.description ? `(described as: "${target?.description}")` : "",
+        `within the scene.`,
+        `What do you think should be the outcome?`
+      ].filter(i => i).join(" ")
+      newEvent = <>You try to use <span className="font-bold">&quot;{item.name}&quot;</span> on <span className="font-bold">&quot;{target?.title}&quot;</span></>
     } else if (event === "DroppedOnAnotherItem") {
-      newEventString = `Player is trying to use those object from their own inventory: "${item.name}" with "${target?.name}". What do you think could the combination of ${item.name} and ${target?.name} lead to? Invent a funny outcome!`
-      newEvent = <>You tried to combine <span className="font-bold">&quot;{item.name}&quot;</span> with <span className="font-bold">&quot;{target?.name}&quot;</span></>
+      newEventString = [
+        `Player is trying to use`,
+        `"${item.name}"`,
+        item.description ? `(described as: "${item.description}")` : "",
+        `on "${target?.name}"`,
+        target?.description ? `(described as: "${target?.description}")` : "",
+        `What do you think could the use or combination of ${item.name} and ${target?.name} lead to?`,
+        `Invent a funny outcome!`
+      ].filter(i => i).join(" ")
+      newEvent = <>You try to combine <span className="font-bold">&quot;{item.name}&quot;</span> with <span className="font-bold">&quot;{target?.title}&quot;</span></>
     } else if (event === "ClickOnItem") {
       newEventString = `Player is inspecting "${item.name}" from their inventory, which has the following description: "${item.description}". Can you invent a funny back story?`
       newEvent = <>🔎 You are inspecting <span className="font-bold">&quot;{item.name}&quot;.</span> {item.description}</>
@@ -345,10 +385,15 @@ export default function Main() {
       setLastEvent(newEvent)
     }
 
-    if (event === "DroppedOnAnotherItem" || event === "ClickOnItem") {
-      askGameMasterForSomeDialogue(newEventString)
+    if (event === "DroppedOnAnotherItem" || event === "ClickOnItem" || event === "DroppedOnActionnable") {
+      askGameMasterForEpicDialogue(newEventString)
+    }
+
+    if (event === "DroppedOnActionnable") {
+      askGameMasterForEpicBackground(newEventString)
     }
   }
+
 
   // determine when to show the spinner
   const isLoading = isBusy || rendered.status === "pending"
@@ -401,41 +446,44 @@ export default function Main() {
         </div>
       </div>
 
-      <div className={[
-        "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
-        getGame(gameRef.current).className // apply the game theme
-      ].join(" ")}>
-        <div className="flex flex-row">
-          <div className="text-xl px-2">{lastEvent}</div>
-        </div>
-        <Inventory game={game} onEvent={handleInventoryEvent} />
-        <div className="flex flex-row">
-          <div className="text-xl mr-2">
-            {rendered.segments.length
-              ? <span>💡 Try to click on:</span>
-              : <span>⌛ Generating clickable areas..</span>
-            }
+      <DndProvider backend={HTML5Backend}>
+        <div className={[
+          "flex flex-col w-full pt-4 space-y-3 text-gray-50 dark:text-gray-50",
+          getGame(gameRef.current).className // apply the game theme
+        ].join(" ")}
+        >
+          <div className="flex flex-row">
+            <div className="text-xl px-2">{lastEvent}</div>
           </div>
-          {clickables.map((clickable, i) => 
-          <div key={i} className="flex flex-row text-xl mr-2">
-            <div className="">{clickable}</div>
-            {i < (clickables.length - 1) ? <div>,</div> : null}
-          </div>)}
+          <Inventory game={game} onEvent={handleInventoryEvent} />
+          <div className="flex flex-row">
+            <div className="text-xl mr-2">
+              {rendered.segments.length
+                ? <span>💡 Try to click on:</span>
+                : <span>⌛ Generating areas for clicks and drag & drop, please wait..</span>
+              }
+            </div>
+            {clickables.map((clickable, i) => 
+            <div key={i} className="flex flex-row text-xl mr-2">
+              <div className="">{clickable}</div>
+              {i < (clickables.length - 1) ? <div>,</div> : null}
+            </div>)}
+          </div>
+          <SceneRenderer
+            rendered={rendered}
+            onEvent={handleSceneEvent}
+            isLoading={isLoading}
+            game={game}
+            engine={engine}
+            debug={debug}
+          />
+          <div
+            className="text-xl rounded-xl backdrop-blur-sm bg-white/10 p-4"
+            style={{
+              textShadow: "1px 0px 2px #000000ab"
+            }}>{dialogue}</div>
         </div>
-        <SceneRenderer
-          rendered={rendered}
-          onEvent={handleSceneEvent}
-          isLoading={isLoading}
-          game={game}
-          engine={engine}
-          debug={debug}
-        />
-        <div
-          className="text-xl rounded-xl backdrop-blur-sm bg-white/10 p-4"
-          style={{
-            textShadow: "1px 0px 2px #000000ab"
-          }}>{dialogue}</div>
-      </div>
+      </DndProvider>
     </div>
   )
 }

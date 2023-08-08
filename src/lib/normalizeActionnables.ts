@@ -1,3 +1,4 @@
+import { defaultActionnables } from "./defaultActionnables"
 import { lightSourceNames } from "./lightSourceNames"
 
 export function normalizeActionnables(rawActionnables: string[]) {
@@ -10,16 +11,7 @@ export function normalizeActionnables(rawActionnables: string[]) {
   const deduplicated = new Set<string>([
     ...tmp,
     // in case result is too small, we add a reserve of useful words here
-    "door",
-    "rock",
-    "window",
-    "table",
-    "ground",
-    "sky",
-    "object",
-    "tree",
-    "wall",
-    "floor"
+    ...defaultActionnables,
     // but we still only want 10 here
     ].slice(0, 10)
   )

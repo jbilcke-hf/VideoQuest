@@ -1,3 +1,3 @@
-export type SceneEventType = 'hover' | 'click' | 'back'
+export type MouseEventType = "hover" | "click"
 
-export type SceneEventHandler = (type: SceneEventType, x: number, y: number) => Promise<void>
+export type MouseEventHandler = (type: MouseEventType, x: number, y: number) => Promise<void>
