@@ -54,10 +54,16 @@ Here is the original scene in which the user was located at first, which will in
   let result = ""
   try {
     result = await predict(prompt)
+    if (!result.trim().length) {
+      throw new Error("empty result!")
+    }
   } catch (err) {
     console.log(`prediction of the background failed, trying again..`)
     try {
-      result = await predict(prompt)
+      result = await predict(prompt+".")
+      if (!result.trim().length) {
+        throw new Error("empty result!")
+      }
     } catch (err) {
       console.error(`prediction of the background failed again!`)
       throw new Error(`failed to generate the background ${err}`)

@@ -58,10 +58,13 @@ Here is the original situation, which will inform you about the general game moo
   let result = ""
   try {
     result = await predict(prompt)
+    if (!result.trim().length) {
+      throw new Error("empty dialogue!")
+    }
   } catch (err) {
     console.log(`prediction of the dialogue failed, trying again..`)
     try {
-      result = await predict(prompt)
+      result = await predict(prompt+".")
     } catch (err) {
       console.error(`prediction of the dialogue failed again!`)
       throw new Error(`failed to generate the dialogue ${err}`)
