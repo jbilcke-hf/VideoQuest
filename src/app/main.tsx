@@ -341,6 +341,8 @@ export default function Main() {
     }
 
     if (event === "ClickOnActionnable" || event === "ClickOnNothing") {
+      setBusy(busyRef.current = true) // this will be set to false once the scene finish loading
+
       askGameMasterForEpicDialogue(newEventString)
       askGameMasterForEpicBackground(newEventString)
     }
@@ -390,6 +392,8 @@ export default function Main() {
     }
 
     if (event === "DroppedOnActionnable") {
+      setBusy(busyRef.current = true) // this will be set to false once the scene finish loading
+
       askGameMasterForEpicBackground(newEventString)
     }
   }
