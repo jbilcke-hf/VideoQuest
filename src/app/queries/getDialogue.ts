@@ -73,8 +73,10 @@ Here is the original situation, which will inform you about the general game moo
     }
   }
 
+  const tmp = result.split("game master:").pop() || result
+
   // llama-2 is too chatty, let's keep 3 sentences at most
-  const sentences = sbd.sentences(result).slice(0, 3).join(" ")
+  const sentences = sbd.sentences(tmp).slice(0, 3).join(" ").trim()
 
   return sentences
 }
