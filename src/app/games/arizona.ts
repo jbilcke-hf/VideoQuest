@@ -1,6 +1,6 @@
 import { imfell } from "@/lib/fonts"
 import { Game } from "./types"
-import { InventoryItem } from "../types"
+import { InventoryItem } from "../../types"
 
 const initialSituation = [
   `looking at an abandonned mining town street`,

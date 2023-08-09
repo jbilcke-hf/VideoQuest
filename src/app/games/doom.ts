@@ -1,6 +1,6 @@
 import { orbitron } from "@/lib/fonts"
 import { Game } from "./types"
-import { InventoryItem } from "../types"
+import { InventoryItem } from "../../types"
 
 const initialSituation = [
   `looking at building on Mars, with multiple moons in the sky`,

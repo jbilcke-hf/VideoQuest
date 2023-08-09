@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { MouseEventHandler } from "./types"
-import { RenderedScene } from "@/app/types"
+import { RenderedScene } from "@/types"
 
 export function CartesianVideo({
   rendered,
@@ -86,18 +86,14 @@ export function CartesianVideo({
         ref={ref}
         onMouseUp={(event) => handleEvent(event, true)}
         onMouseMove={(event) => handleEvent(event, false)}
-        className="absolute"
+        className="fixed w-screen top-0 left-0 right-0"
         muted
         autoPlay
         loop
-        width="1024px"
-        height="512px"
       />
       {debug && <img
         src={rendered.maskUrl || undefined}
-        className="absolute opacity-50 pointer-events-none"
-        width="1024px"
-        height="512px"
+        className="fixed w-screen top-0 left-0 right-0 opacity-50 pointer-events-none"
       />}
     </div>
   )

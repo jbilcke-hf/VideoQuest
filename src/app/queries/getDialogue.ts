@@ -1,3 +1,5 @@
+import sbd from "sbd"
+
 import { Game } from "@/app/games/types"
 import { createLlamaPrompt } from "@/lib/createLlamaPrompt"
 
@@ -71,5 +73,8 @@ Here is the original situation, which will inform you about the general game moo
     }
   }
 
-  return result
+  // llama-2 is too chatty, let's keep 3 sentences at most
+  const sentences = sbd.sentences(result).slice(0, 3).join(" ")
+
+  return sentences
 }

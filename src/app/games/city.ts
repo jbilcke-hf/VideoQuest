@@ -1,6 +1,6 @@
 import { edu } from "@/lib/fonts"
 import { Game } from "./types"
-import { InventoryItem } from "../types"
+import { InventoryItem } from "../../types"
 
 const actions = [
   "busy pedestrians",

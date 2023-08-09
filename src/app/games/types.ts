@@ -1,5 +1,5 @@
-import { EngineType } from "../engines"
-import { InventoryItem } from "../types"
+import { InventoryItem } from "@/types"
+import { EngineType } from "@/app/engine/engines"
 
 export type GameType =
   | "pirates"

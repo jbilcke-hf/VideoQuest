@@ -1,6 +1,6 @@
 import { macondo } from "@/lib/fonts"
 import { Game } from "./types"
-import { InventoryItem } from "../types"
+import { InventoryItem } from "../../types"
 
 const initialSituation = [
   `in Martin Place, Sydney`,

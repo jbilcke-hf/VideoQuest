@@ -1,18 +1,20 @@
 import { useEffect, useRef, useState } from "react"
+import { useDrop } from "react-dnd"
 
-import { DropZoneTarget, ImageSegment, RenderedScene, SceneEvent } from "@/app/types"
-import { ProgressBar } from "../misc/progress"
+import { DropZoneTarget, ImageSegment, RenderedScene, SceneEvent } from "@/types"
+import { useImageDimension } from "@/lib/useImageDimension"
+import { formatActionnableName } from "@/lib/formatActionnableName"
 import { Game } from "@/app/games/types"
-import { Engine } from "@/app/engines"
+import { Engine } from "@/app/engine/engines"
+
 import { CartesianImage } from "./cartesian-image"
 import { MouseEventHandler, MouseEventType } from "./types"
 import { CartesianVideo } from "./cartesian-video"
 import { SphericalImage } from "./spherical-image"
-import { useImageDimension } from "@/lib/useImageDimension"
-import { useDrop } from "react-dnd"
-import { formatActionnableName } from "@/lib/formatActionnableName"
+
 import { SceneTooltip } from "./scene-tooltip"
 import { SceneMenu } from "./scene-menu"
+import { cn } from "@/lib/utils"
 
 export const SceneRenderer = ({
   rendered,
@@ -29,15 +31,13 @@ export const SceneRenderer = ({
   engine: Engine
   debug: boolean
 }) => {
-  const timeoutRef = useRef<any>()
+
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const contextRef = useRef<CanvasRenderingContext2D | null>(null)
   const [actionnable, setActionnable] = useState<string>("")
   const actionnableRef = useRef<string>("")
-  const [progressPercent, setProcessPercent] = useState(0)
-  const progressRef = useRef(0)
-  const isLoadingRef = useRef(isLoading)
+
   const maskDimension = useImageDimension(rendered.maskUrl)
 
   const [isHover, setHover] = useState(false)
@@ -141,6 +141,7 @@ export const SceneRenderer = ({
     const noContext = !contextRef.current
     const noSegmentationMask = !rendered.maskUrl
     const noSegmentsToClickOn = rendered.segments.length == 0
+    const outOfBounds = relativeX < 0 || relativeX > 1 || relativeY < 0 || relativeY > 1
 
     const mustAbort =
      noMenu
@@ -148,6 +149,7 @@ export const SceneRenderer = ({
      || noSegmentationMask
      || noSegmentsToClickOn
      || isLoading
+     || outOfBounds
 
     if (mustAbort) {
       // if (type === "click") { onEvent("ClickOnNothing") }
@@ -243,42 +245,16 @@ export const SceneRenderer = ({
 
       }
     }
-  };
-
-  const updateProgressBar = () => {
-    const duration = 1000 // 1 sec
-    const frequency = 200 // 200ms
-    const nbUpdatesPerSec = duration / frequency // 5x per second
-
-    // normally it takes 45, and we will try to go below,
-    // but to be safe let's set the counter a 1 min
-    const nbSeconds = 32 // 1 min
-    const amountInPercent =  100 / (nbUpdatesPerSec * nbSeconds) // 0.333
-
-    progressRef.current = Math.min(100, progressRef.current + amountInPercent)
-    setProcessPercent(progressRef.current)
   }
 
-  useEffect(() => {
-    clearInterval(timeoutRef.current)
-    isLoadingRef.current = isLoading
-    progressRef.current = 0
-    setProcessPercent(0)
-    if (isLoading) {
-      timeoutRef.current = setInterval(updateProgressBar, 200)
-    }
-  }, [isLoading, rendered.assetUrl, engine?.type])
-
+  const isFullScreen = true
   return (
-    <div className="w-full pt-2" ref={drop}>
+    <div className="" ref={drop}>
       <div
         ref={containerRef}
-        className={[
-          "relative border-2 border-gray-50 rounded-xl overflow-hidden min-h-[512px]",
-          engine.type === "cartesian_video"
-          || engine.type === "cartesian_image"
-            ? "w-full" // w-[1024px] h-[512px]"
-            : "w-full",
+        className={cn(
+          "border-0 overflow-hidden",
+          `fixed top-0 left-0 right-0 w-screen`,
             
           isLoading
             ? "cursor-wait"
@@ -287,7 +263,7 @@ export const SceneRenderer = ({
             ? "cursor-crosshair"
             : "cursor-crosshair"
             : ""
-          ].join(" ")}>
+          )}>
         {engine.type === "cartesian_video"
           ? <CartesianVideo
               rendered={rendered}
@@ -307,32 +283,29 @@ export const SceneRenderer = ({
             />
         }
 
+        {/*
+        engine.type === "cartesian_image" || engine.type === "cartesian_video"
+        ? <SceneTooltip
+          isVisible={isTooltipVisible && !isLoading}
+          x={tooltipX}
+          y={tooltipY}>
+          {actionnable}
+        </SceneTooltip> : null
+        */
+        }
       </div>
 
-      <SceneTooltip
-        isVisible={isTooltipVisible && !isLoading}
-        x={tooltipX}
-        y={tooltipY}>
-        {actionnable}
-      </SceneTooltip>
-
       {/*
+      engine.type === "cartesian_image" || engine.type === "cartesian_video"
+       ? 
       <SceneMenu
         actions={["Go here", "Interact"]}
         isVisible={isMenuVisible && !isLoading}
         x={menuX}
         y={menuY}
-      />
+      /> : null
       */}
 
-      {isLoading
-      ? <div className="fixed flex w-20 h-20 bottom-8 right-0 mr-8 z-50">
-          <ProgressBar
-            text="⌛"
-            progressPercentage={progressPercent}
-          />
-        </div>
-      : null}
     </div>
   )
 }

@@ -71,6 +71,6 @@ export const engines: Record<string, Engine> = {
     }
 }
 
-export const defaultEngine: EngineType = "spherical_image"
+export const defaultEngine: EngineType = "cartesian_image"
 
 export const getEngine = (type?: EngineType): Engine => engines[type || defaultEngine] || engines[defaultEngine]

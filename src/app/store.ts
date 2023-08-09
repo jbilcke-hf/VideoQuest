@@ -1,6 +1,6 @@
 "use client"
 
-import { InventoryItem } from "./types"
+import { InventoryItem } from "../types"
 
 // could also be Zustand or something
 export const store: {

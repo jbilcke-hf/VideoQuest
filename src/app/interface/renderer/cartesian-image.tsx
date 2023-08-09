@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react"
-import { MouseEventHandler } from "./types"
-import { RenderedScene } from "@/app/types"
+
+import { RenderedScene } from "@/types"
+import { MouseEventHandler } from "@/app/interface/renderer/types"
+import { FullScreenIcon } from "@/components/icons/full-screen"
+import { FullScreenButton } from "@/app/interface/renderer/full-screen-button"
 
 export function CartesianImage({
   rendered,
@@ -84,24 +87,19 @@ export function CartesianImage({
     return null
   }
   return (
-    <div
-      className={[
-        "h-[512px]",
-        className
-      ].join(" ")
-      }
-    >
+    <>
       <img
         src={rendered.assetUrl || undefined}
         ref={ref}
-        className="absolute"
+        className="fixed w-screen top-0 left-0 right-0"
         onMouseUp={(event) => handleEvent(event, true)}
         onMouseMove={(event) => handleEvent(event, false)}
       />
       {debug && <img
         src={rendered.maskUrl || undefined}
-        className="absolute opacity-50 pointer-events-none"
+        className="fixed w-screen top-0 left-0 right-0 opacity-50 pointer-events-none"
       />}
-    </div>
+      {/* <FullScreenButton /> */}
+    </>
   )
 }

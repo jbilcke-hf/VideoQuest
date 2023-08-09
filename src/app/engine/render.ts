@@ -1,8 +1,8 @@
 "use server"
 
-import Gorgon from "@gorgonjs/gorgon"
 
-import { RenderedScene } from "./types"
+
+import { RenderedScene } from "@/types"
 import { Engine, EngineType } from "./engines"
 
 // note: there is no / at the end in the variable
@@ -76,7 +76,7 @@ export async function newRender({
           actionnables,
           segmentation: "firstframe", // one day we will remove this param, to make it automatic
           width: isForVideo ? 576 : 1024,
-          height: isForVideo ? 320 : 512,
+          height: isForVideo ? 320 : 768,
         }),
         cache: 'no-store',
       // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)

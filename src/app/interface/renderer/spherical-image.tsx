@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { PanoramaPosition, PluginConstructor, Point, Position, SphericalPosition, Viewer } from "@photo-sphere-viewer/core"
 import { LensflarePlugin, ReactPhotoSphereViewer } from "react-photo-sphere-viewer"
 
-import { RenderedScene } from "@/app/types"
+import { RenderedScene } from "@/types"
 
 import { MouseEventHandler } from "./types"
 import { useImageDimension } from "@/lib/useImageDimension"
@@ -247,7 +247,7 @@ export function SphericalImage({
         container=""
         containerClass={className}
         
-        height="60vh"
+        height="100vh"
         width="100%"
         
         // to access a plugin we must use viewer.getPlugin()
