@@ -11,7 +11,7 @@ export function Dialogue({ children, className = "", isLoading }: {
       className={cn(
         `fixed left-6 max-w-[60%]`,
         `transition-all duration-300`,
-        `text-xl rounded-2xl backdrop-blur-xl bg-stone-600/40 p-4`,
+        `text-xl rounded-2xl backdrop-blur-xl bg-stone-700/40  dark:bg-stone-700/40 p-4 text-gray-50 dark:text-gray-50`,
         className
       )}
       style={{

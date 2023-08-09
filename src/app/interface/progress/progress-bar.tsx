@@ -23,7 +23,7 @@ export function ProgressBar ({
         text={text || ""}   
 
         // Width of circular line relative to total width of component, a value from 0-100. Default: 8.
-        strokeWidth={12}
+        strokeWidth={8}
 
         
           // As a convenience, you can use buildStyles to configure the most common style changes:
@@ -36,10 +36,10 @@ export function ProgressBar ({
             strokeLinecap: 'round',
 
             // Text size
-            textSize: '40px',
+            textSize: '20px',
 
             // How long animation takes to go from one percentage to another, in seconds
-            pathTransitionDuration: 0.5,
+            pathTransitionDuration: 0.1,
 
             // Can specify path transition in more detail, or remove it entirely
             // pathTransition: 'none',

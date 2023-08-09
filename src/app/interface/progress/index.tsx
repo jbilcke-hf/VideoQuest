@@ -43,14 +43,14 @@ export function Progress({
 
   return (
     <div className={cn(
-      `fixed flex w-20 h-20 top-16 right-6 z-50`,
-      `animation-all duration-300`,
+      `fixed flex w-10 h-10 top-16 right-6 z-50`,
+      `animation-all duration-300 text-md`,
       isLoading
         ? `scale-100 opacity-100`
         : `scale-0 opacity-0`,
       className
     )}>
-      <ProgressBar text="⌛" progressPercentage={progressPercent} />
+      <ProgressBar progressPercentage={progressPercent} />
     </div>
   )
 }
