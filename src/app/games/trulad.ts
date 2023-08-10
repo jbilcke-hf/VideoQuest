@@ -26,9 +26,9 @@ export const game: Game = {
   title: "The Trulad Show",
   type: "trulad",
   description: [
-    "The Trulad Show is a reality TV show about a generic guy called Trulad (usually dressed in a yellow shirt) who lives his normal, daily life",
+    "The Trulad Show is a reality TV show about a generic guy called Trulad (usually dressed in a yellow shirt) who lives his normal, daily life.",
     "Trulad doesn't know he is filmed as the cameras are hidden.",
-    "The player is Director, and can influence the life of Trulad",
+    "The player is Director, and can influence the life of Trulad.",
     "The player can click around to move to new scenes, camera orientation, trigger events int he life of Trulad.",
     "They can also use objects from their inventory.",
   ],
