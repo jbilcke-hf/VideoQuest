@@ -41,10 +41,10 @@ Here is the original situation, which will inform you about the general game moo
     {
       role: "system",
       content: [
-        `You are the AI game master of a role video game.`,
+        `You are an AI game master.`,
         `You are going to receive new information about the current whereabouts and action of the player.`,
         basePrompt,
-        `You must imagine a funny response to speak in reaction to what the player did, like in some old point and click video games.`,
+        `You must imagine a funny response to speak in reaction to what the player did`,
         `Please only write between 2 to 3 short sentences, please.`,
         `Please add a few funny puns and jokes.`,
         `But please don't say things like "Well, well, well" or "Ah, the classic combination of" it is annoying.`

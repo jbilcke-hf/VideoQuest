@@ -16,6 +16,7 @@ export const getBase = ({
     : initialPrompt
 
   const userSituationPrompt = [
+    game.description,
     `Player is currently in "${currentPrompt}".`,
     lastEvent
   ].join(" ")

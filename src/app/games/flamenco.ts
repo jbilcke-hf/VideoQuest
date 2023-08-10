@@ -1,4 +1,4 @@
-import { macondo } from "@/lib/fonts"
+import { edu } from "@/lib/fonts"
 import { Game } from "./types"
 import { InventoryItem } from "../../types"
 
@@ -54,8 +54,18 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Sad Flamenco",
   type: "flamenco",
-  engine: "spherical_image",
-  className: macondo.className,
+  description: [
+    "The game is a role playing adventure set in 1920 mexico, inspired by the Grim Fandango game, with mexican, art deco and aztec influences.",
+    "The player is Lenny, a travel agent from the world of the dead, who try to find customers to escort safely to heaven.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
+  className: edu.className,
   initialSituation,
   initialActionnables,
   inventory,

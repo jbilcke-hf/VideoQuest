@@ -68,7 +68,17 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Vernian",
   type: "vernian",
-  engine: "spherical_image",
+  description: [
+    "The game is a role playing adventure set in the world of Jules Verne adventures, with heavy steampunk inspirations.",
+    "The player try to find a treasure on a mysterious island, and they search in Jules Verne's secret cabinet and atelier.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: imfell.className,
   initialSituation,
   initialActionnables,

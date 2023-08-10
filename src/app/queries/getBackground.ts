@@ -35,7 +35,7 @@ Here is the original scene in which the user was located at first, which will in
     {
       role: "system",
       content: [
-        `You are the photo director of a role video game.`,
+        `You are a photo director.`,
         basePrompt,
         `You are going to receive new information about the current activity of the player.`,
         `Please write in a single sentence a photo caption for the next plausible scene, using a few words for each of those categories: the environment, era, characters, objects, textures, lighting.`,

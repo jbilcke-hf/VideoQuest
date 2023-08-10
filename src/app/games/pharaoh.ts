@@ -48,7 +48,17 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Pharaoh",
   type: "pharaoh",
-  engine: "spherical_image",
+  description: [
+    "The game is a role playing adventure set in ancient egypt.",
+    "The player is Ahmose, a scribe asked by the Pharaoh to investigate ancient ruins about an unknown deity.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: macondo.className,
   initialSituation,
   initialActionnables,

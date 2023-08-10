@@ -43,7 +43,17 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Doom",
   type: "doom",
-  engine: "cartesian_image",
+  description: [
+    "The game is a futuristic first-person shooter similar to \"Doom\".",
+    "Following a mining accident, the player has been called to Mars to explore the US Martian base, but they encounter aliens.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: orbitron.className,
   initialSituation,
   initialActionnables,

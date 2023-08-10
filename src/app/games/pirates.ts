@@ -114,7 +114,17 @@ const initialSituation = [
 export const game: Game = {
   title: "Pirates",
   type: "pirates",
-  engine: "cartesian_image",
+  description: [
+    "The game is a role playing adventure set in the world of pirates.",
+    "The player is Guybroom Threepence, a pirate apprentice who try to find the Crystal Monkey treasure by himself.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: lugrasimo.className,
   initialSituation,
   initialActionnables,

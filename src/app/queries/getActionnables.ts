@@ -47,7 +47,7 @@ export const getActionnables = async ({
     {
       role: "system",
       content: [
-        `You are an API endpoint that can return a list of objects visible in the background image of a role playing game.`,
+        `You are an API endpoint that can return a list of objects visible in the background image of a game.`,
         basePrompt,
         `You must list twelve (12) basic names of visible objects (eg. "door", "person", "window", "light", "floor", "knob", "button", "rock", "tree", "parrot", "chest", "glass".. etc) but don't list any word from abstract or immaterial concepts (ig. don't list words like "secret", "danger", "next move", "game" etc)`,
         `The answer must be a JSON array, ie. a list of 12 quoted strings.`

@@ -67,7 +67,7 @@ export function TopMenu({
       <div className="flex flex-row items-center space-x-3 font-mono">
         <Label className="flex text-sm">Rendering engine:</Label>
         <Select
-          defaultValue={engine.type}
+          defaultValue={game.engines.includes(engine.type) ? engine.type : game.engines[0]}
           onValueChange={(value) => { onChangeEngine(value as EngineType) }}>
           <SelectTrigger className="w-[300px]">
             <SelectValue className="text-sm" placeholder="Type" />
@@ -76,7 +76,16 @@ export function TopMenu({
             {Object.entries(engines)
               .filter(([_, engine]) => engine.visible)
               .map(([key, engine]) =>
-            <SelectItem key={key} value={key} disabled={!engine.enabled}>{engine.label} ({engine.modelName})</SelectItem>
+              <SelectItem
+                key={key}
+                value={key}
+                disabled={
+                  !engine.enabled || !game.engines.includes(engine.type)
+                }>{
+                  engine.label
+                } ({
+                  engine.modelName
+                })</SelectItem>
             )}
           </SelectContent>
         </Select>

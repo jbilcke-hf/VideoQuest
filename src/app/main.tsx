@@ -49,7 +49,8 @@ export default function Main() {
   const [game, setGame] = useState<Game>(getGame(gameRef.current))
 
   const requestedEngine = (searchParams.get('engine') as EngineType) || defaultEngine
-  const [engine, setEngine] = useState<Engine>(getEngine(requestedEngine))
+  const usableEngine = game.engines.includes(requestedEngine) ? requestedEngine : game.engines[0]
+  const [engine, setEngine] = useState<Engine>(getEngine(usableEngine))
 
   const requestedDebug = (searchParams.get('debug') === "true")
   const [debug, setDebug] = useState<boolean>(requestedDebug)

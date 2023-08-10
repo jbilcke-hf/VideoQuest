@@ -40,7 +40,16 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Arizona",
   type: "arizona",
-  engine: "spherical_image",
+  description: [
+    "The game is a role playing adventure, set in an old mining town in Arizona.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: imfell.className,
   initialSituation,
   initialActionnables,

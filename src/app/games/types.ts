@@ -13,6 +13,7 @@ export type GameType =
   | "tensor"
   | "nexus"
   | "arizona"
+  | "trulad"
 
 export interface Scene {
   actionnables: string[]
@@ -22,7 +23,8 @@ export interface Scene {
 export interface Game {
   title: string
   type: GameType
-  engine: EngineType
+  description: string[]
+  engines: EngineType[]
   className: string
   initialSituation: string
   initialActionnables: string[]

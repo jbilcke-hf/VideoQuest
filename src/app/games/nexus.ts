@@ -66,7 +66,17 @@ const inventory: InventoryItem[] = [
 export const game: Game = {
   title: "Nexus",
   type: "nexus",
-  engine: "spherical_image",
+  description: [
+    "The game is a role playing adventure set in a futuristic city, with cyberpunk influence.",
+    "The player is a detective whose role is to detect robots trying to pass as humans.",
+    "The player can click around to move to new scenes, find or activate artifacts.",
+    "They can also use objects from their inventory.",
+  ],
+  engines: [
+    "cartesian_image",
+    "cartesian_video",
+    "spherical_image",
+  ],
   className: macondo.className,
   initialSituation,
   initialActionnables,
