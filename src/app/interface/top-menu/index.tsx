@@ -19,18 +19,23 @@ export function TopMenu({
   engine,
   defaultGame,
   game,
+  debug,
+  clearCache,
   onChangeEngine,
   onChangeGame,
   onToggleDebug,
-  debug,
+  onToggleClearCache,
 }: {
   engine: Engine,
   defaultGame: string
   game: Game
+  debug: boolean
+  clearCache: boolean
   onChangeEngine: (newEngine: EngineType) => void
   onChangeGame: (newGameType: GameType) => void
   onToggleDebug: (isToggledOn: boolean) => void
-  debug: boolean
+  onToggleClearCache: (shouldClearCache: boolean) => void
+
 }) {
   return (
     <div className={cn(
@@ -65,7 +70,14 @@ export function TopMenu({
         <Label>Debug</Label>
       </div>
       <div className="flex flex-row items-center space-x-3 font-mono">
-        <Label className="flex text-sm">Rendering engine:</Label>
+        <Switch
+          checked={clearCache}
+          onCheckedChange={onToggleClearCache}
+        />
+        <Label>No cache</Label>
+      </div>
+      <div className="flex flex-row items-center space-x-3 font-mono">
+        <Label className="flex text-sm">Engine:</Label>
         <Select
           defaultValue={game.engines.includes(engine.type) ? engine.type : game.engines[0]}
           onValueChange={(value) => { onChangeEngine(value as EngineType) }}>

@@ -2,7 +2,7 @@
 
 
 
-import { RenderedScene } from "@/types"
+import { RenderRequest, RenderedScene } from "@/types"
 import { Engine, EngineType } from "./engines"
 
 // note: there is no / at the end in the variable
@@ -15,10 +15,12 @@ export async function newRender({
   prompt,
   actionnables = [],
   engine,
+  clearCache,
 }: {
   prompt: string
   actionnables: string[]
   engine: Engine
+  clearCache: boolean
 }) {
   if (!prompt) {
     console.error(`cannot call the rendering API without a prompt, aborting..`)
@@ -30,8 +32,6 @@ export async function newRender({
   }
 
   const nbFrames = engine.type.includes("video") ? 8 : 1
-
-  const cacheKey = `render/${JSON.stringify({ prompt, actionnables, nbFrames, type: engine.type })}`
 
   // return await Gorgon.get(cacheKey, async () => {
 
@@ -49,18 +49,24 @@ export async function newRender({
 
       const isForVideo = nbFrames > 1
 
-  
-      console.log("REQUEST:", JSON.stringify({
-        prompt,
-        // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
-        nbFrames, // when nbFrames is 1, we will only generate static images
-        nbSteps: isForVideo ? 25 : 35, // 20 = fast, 30 = better, 50 = best
-        actionnables,
-        segmentation: "firstframe", // one day we will remove this param, to make it automatic
-        width: isForVideo ? 576 : 1024,
-        height: isForVideo ? 320 : 512,
-      }))
-    
+    const request = {
+      prompt,
+      // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
+      nbFrames, // when nbFrames is 1, we will only generate static images
+      nbSteps: isForVideo ? 30 : 35, // 20 = fast, 30 = better, 50 = best
+      actionnables,
+      segmentation: "firstframe", // one day we will remove this param, to make it automatic
+      width: isForVideo ? 576 : 1024,
+      height: isForVideo ? 320 : 768,
+
+      // note that we never disable the cache completely for VideoQuest
+      // that's because in the feedbacks people prefer speed to avoid frustration
+      cache: clearCache ? "renew" : "use",
+
+    } as Partial<RenderRequest>
+
+    console.table(request)
+
       const res = await fetch(`${apiUrl}/render`, {
         method: "POST",
         headers: {
@@ -68,16 +74,7 @@ export async function newRender({
           "Content-Type": "application/json",
           // Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
         },
-        body: JSON.stringify({
-          prompt,
-          // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
-          nbFrames, // when nbFrames is 1, we will only generate static images
-          nbSteps: isForVideo ? 30 : 35, // 20 = fast, 30 = better, 50 = best
-          actionnables,
-          segmentation: "firstframe", // one day we will remove this param, to make it automatic
-          width: isForVideo ? 576 : 1024,
-          height: isForVideo ? 320 : 768,
-        }),
+        body: JSON.stringify(request),
         cache: 'no-store',
       // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
       // next: { revalidate: 1 }

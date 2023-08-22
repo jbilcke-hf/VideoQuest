@@ -1,4 +1,4 @@
-import { imfell } from "@/lib/fonts"
+import { moondance } from "@/lib/fonts"
 import { Game } from "./types"
 import { InventoryItem } from "../../types"
 
@@ -79,7 +79,7 @@ export const game: Game = {
     "cartesian_video",
     "spherical_image",
   ],
-  className: imfell.className,
+  className: moondance.className,
   initialSituation,
   initialActionnables,
   inventory,

@@ -1,4 +1,12 @@
-import { Inter, Edu_SA_Beginner, Orbitron, Amatic_SC, Macondo_Swash_Caps, IM_Fell_English_SC } from "next/font/google"
+import {
+  Inter,
+  Edu_SA_Beginner,
+  Orbitron,
+  Amatic_SC,
+  Macondo_Swash_Caps,
+  IM_Fell_English_SC,
+  Moon_Dance
+} from "next/font/google"
 import localFont from "next/font/local"
 
 export const inter = Inter({
@@ -10,6 +18,13 @@ export const edu = Edu_SA_Beginner({
   subsets: ["latin"],
   variable: "--font-edu",
 })
+
+export const moondance = Moon_Dance({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-moondance",
+})
+
 
 export const orbitron = Orbitron({
   subsets: ["latin"],

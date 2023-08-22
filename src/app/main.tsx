@@ -55,6 +55,9 @@ export default function Main() {
   const requestedDebug = (searchParams.get('debug') === "true")
   const [debug, setDebug] = useState<boolean>(requestedDebug)
 
+  const requestedClearCache = (searchParams.get('clearCache') ? (searchParams.get('clearCache') === "true") : false)
+  const [clearCache, setClearCache] = useState<boolean>(requestedClearCache)
+
   const [situation, setSituation] = useState("")
 
   const [dialogue, setDialogue] = useState("")
@@ -91,10 +94,10 @@ export default function Main() {
           Array.isArray(nextActionnables) && nextActionnables.length
           ? nextActionnables
           : game.initialActionnables
-        )
-      })
+        ),
 
-      console.log("got the first version of our scene!", newRendered)
+        clearCache
+      })
 
       // detect if type game type changed while we were busy
       // note that currently we reload the whol page when tha happens,
@@ -102,15 +105,25 @@ export default function Main() {
       if (game?.type !== gameRef?.current) {
         console.log("game type changed! aborting..")
         return
-
       }
-      // we cheat a bit by displaying the previous image as a placeholder
-      // this is better than displaying a blank image!
-      newRendered.assetUrl = rendered.assetUrl
-      newRendered.maskUrl = rendered.maskUrl
+
+      console.log("got the first version of our scene!", newRendered)
+
+      // in cache we didn't hit the cache and the request is still pending
+        // we cheat a bit by displaying the previous image as a placeholder
+      if (!newRendered.assetUrl && rendered.assetUrl && rendered.maskUrl) {
+        console.log("image is not in cache, using previous image as a placeholder..")
+        // this is better than displaying a blank image, no?
+        newRendered.assetUrl = rendered.assetUrl
+        newRendered.maskUrl = rendered.maskUrl
+      }
 
       historyRef.current.unshift(newRendered)
       setRendered(newRendered)
+
+      if (newRendered.status === "completed") {
+        setBusy(busyRef.current = false)
+      }
     })
   }
 
@@ -121,7 +134,7 @@ export default function Main() {
     if (!historyRef.current[0]?.renderId || historyRef.current[0]?.status !== "pending") {
 
       // console.log("let's try again in a moments")
-      loopRef.current = setTimeout(() => checkRenderedLoop(), 200)
+      loopRef.current = setTimeout(() => checkRenderedLoop(), 1000)
       return
     } 
 
@@ -254,6 +267,23 @@ export default function Main() {
 
     setDebug(isToggledOn)
   }
+
+  const handleToggleClearCache = (shouldClearCache: boolean) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()))
+    current.set("clearCache", `${shouldClearCache}`)
+    const search = current.toString()
+    const query = search ? `?${search}` : ""
+
+    // for some reason, this doesn't work?!
+    router.replace(`${pathname}${query}`, { })
+    
+    // workaround.. but it is strange that router.replace doesn't work..
+    let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + search.toString()
+    window.history.pushState({path: newurl}, '', newurl)
+
+    setClearCache(shouldClearCache)
+  }
+
 
   const handleSelectGame = (newGameType: GameType) => {
     gameRef.current = newGameType
@@ -412,10 +442,12 @@ export default function Main() {
         engine={engine}
         game={game}
         defaultGame={gameRef.current}
+        debug={debug}
+        clearCache={clearCache}
         onToggleDebug={handleToggleDebug}
         onChangeGame={handleSelectGame}
         onChangeEngine={handleSelectEngine}
-        debug={debug}
+        onToggleClearCache={handleToggleClearCache}
       />
 
       <DndProvider backend={HTML5Backend}>

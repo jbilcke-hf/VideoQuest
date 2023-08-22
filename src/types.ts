@@ -1,5 +1,7 @@
 export type ProjectionMode = 'cartesian' | 'spherical'
 
+export type CacheMode = "use" | "renew" | "ignore"
+
 export interface RenderRequest {
   prompt: string
 
@@ -28,6 +30,8 @@ export interface RenderRequest {
   height: number // fixed at 512 for now
 
   projection: ProjectionMode
+
+  cache: CacheMode
 }
 
 export interface ImageSegment {
