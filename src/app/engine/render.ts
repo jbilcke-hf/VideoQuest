@@ -39,6 +39,7 @@ export async function newRender({
       renderId: "",
       status: "error",
       assetUrl: "",
+      alt: prompt || "",
       maskUrl: "",
       error: "failed to fetch the data",
       segments: []
@@ -117,6 +118,7 @@ export async function getRender(renderId: string) {
     renderId: "",
     status: "error",
     assetUrl: "",
+    alt: "",
     maskUrl: "",
     error: "failed to fetch the data",
     segments: []
