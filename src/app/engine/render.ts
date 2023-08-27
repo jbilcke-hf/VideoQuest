@@ -59,6 +59,11 @@ export async function newRender({
       width: isForVideo ? 576 : 1024,
       height: isForVideo ? 320 : 768,
 
+      // on VideoQuest we use an aggressive setting: 4X upscaling
+      // this generates images that can be slow to load, but that's
+      // not too much of an issue since we use async loading
+      upscalingFactor: 4,
+
       // note that we never disable the cache completely for VideoQuest
       // that's because in the feedbacks people prefer speed to avoid frustration
       cache: clearCache ? "renew" : "use",
