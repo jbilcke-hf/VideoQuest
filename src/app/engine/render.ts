@@ -131,7 +131,7 @@ export async function getRender(renderId: string) {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
-        // Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
       },
       cache: 'no-store',
     // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
