@@ -116,11 +116,11 @@ export async function getRender(renderId: string) {
 
   let defaulResult: RenderedScene = {
     renderId: "",
-    status: "error",
+    status: "pending",
     assetUrl: "",
     alt: "",
     maskUrl: "",
-    error: "failed to fetch the data",
+    error: "",
     segments: []
   }
 
@@ -153,6 +153,8 @@ export async function getRender(renderId: string) {
     return response
   } catch (err) {
     console.error(err)
+    defaulResult.status = "error"
+    defaulResult.error = `${err}`
     // Gorgon.clear(cacheKey)
     return defaulResult
   }
