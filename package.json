@@ -64,6 +64,7 @@
     "react-dom": "18.2.0",
     "react-photo-sphere-viewer": "^3.4.0-psv5.4.0",
     "sbd": "^1.0.19",
+    "sharp": "^0.32.6",
     "styled-components": "^6.0.7",
     "tailwind-merge": "^1.13.2",
     "tailwindcss": "3.3.3",
