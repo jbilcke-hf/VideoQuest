@@ -284,7 +284,7 @@ export const SceneRenderer = ({
         }
 
         {/*
-        engine.type === "cartesian_image" || engine.type === "cartesian_video"
+        engine.type === "cartesian_image" || engine.type === "cartesian_image_turbo" || engine.type === "cartesian_video"
         ? <SceneTooltip
           isVisible={isTooltipVisible && !isLoading}
           x={tooltipX}
@@ -296,7 +296,7 @@ export const SceneRenderer = ({
       </div>
 
       {/*
-      engine.type === "cartesian_image" || engine.type === "cartesian_video"
+      engine.type === "cartesian_image" || engine.type === "cartesian_image_turbo" || engine.type === "cartesian_video"
        ? 
       <SceneMenu
         actions={["Go here", "Interact"]}

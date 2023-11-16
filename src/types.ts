@@ -37,8 +37,15 @@ export interface RenderRequest {
   // 4x: 4x larger, up to 4096x4096 (warning: a PNG of this size can be 50 Mb!)
   upscalingFactor: number
 
-
   projection: ProjectionMode
+
+  /**
+   * Use turbo mode
+   * 
+   * At the time of writing this will use SSD-1B + LCM
+   * https://huggingface.co/spaces/jbilcke-hf/fast-image-server
+   */
+  turbo: boolean
 
   cache: CacheMode
 

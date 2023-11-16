@@ -74,6 +74,7 @@ export const game: Game = {
   ],
   engines: [
     "cartesian_image",
+    "cartesian_image_turbo",
     "cartesian_video",
     "spherical_image",
   ],

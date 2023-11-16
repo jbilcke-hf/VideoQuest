@@ -1,6 +1,7 @@
 
 export type EngineType =
   | "cartesian_image"
+  | "cartesian_image_turbo"
   | "cartesian_video"
   | "spherical_image"
   | "spherical_video"
@@ -18,8 +19,17 @@ export interface Engine {
 
 export const engines: Record<string, Engine> = {
   cartesian_image: {
+    type: "cartesian_image_turbo",
+    label: "Turbo image",
+    visible: true,
+    enabled: true,
+    modelName: "LCM-SDXL",
+    modelUrl: "https://huggingface.co/latent-consistency/lcm-sdxl",
+  },
+  /*
+  cartesian_image: {
     type: "cartesian_image",
-    label: "Cartesian image",
+    label: "Turbo image",
     visible: true,
     enabled: true,
     modelName: "SDXL",
@@ -69,6 +79,7 @@ export const engines: Record<string, Engine> = {
       modelName: "",
       modelUrl: "",
     }
+  */
 }
 
 export const defaultEngine: EngineType = "cartesian_image"

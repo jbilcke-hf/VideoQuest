@@ -66,6 +66,7 @@ export const fontList = [
   inter,
   edu,
   orbitron,
+  imfell,
   amatic,
   macondo,
   lugrasimo,

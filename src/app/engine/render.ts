@@ -35,26 +35,27 @@ export async function newRender({
 
   // return await Gorgon.get(cacheKey, async () => {
 
-    let defaulResult: RenderedScene = {
-      renderId: "",
-      status: "error",
-      assetUrl: "",
-      alt: prompt || "",
-      maskUrl: "",
-      error: "failed to fetch the data",
-      segments: []
-    }
+  let defaulResult: RenderedScene = {
+    renderId: "",
+    status: "error",
+    assetUrl: "",
+    alt: prompt || "",
+    maskUrl: "",
+    error: "failed to fetch the data",
+    segments: []
+  }
 
-    try {
-      // console.log(`calling POST ${apiUrl}/render with prompt: ${prompt}`)
+  try {
+    // console.log(`calling POST ${apiUrl}/render with prompt: ${prompt}`)
 
-      const isForVideo = nbFrames > 1
+    const isForVideo = nbFrames > 1
+    const nbSteps = isForVideo ? 30 : engine.type === "cartesian_image_turbo" ? 8 : 35
 
     const request = {
       prompt,
       // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
       nbFrames, // when nbFrames is 1, we will only generate static images
-      nbSteps: isForVideo ? 30 : 35, // 20 = fast, 30 = better, 50 = best
+      nbSteps,
       actionnables,
       segmentation: "firstframe", // one day we will remove this param, to make it automatic
       width: isForVideo ? 576 : 1024,
@@ -64,6 +65,8 @@ export async function newRender({
       // this generates images that can be slow to load, but that's
       // not too much of an issue since we use async loading
       upscalingFactor: 4,
+
+      turbo:  engine.type === "cartesian_image_turbo",
 
       // note that we never disable the cache completely for VideoQuest
       // that's because in the feedbacks people prefer speed to avoid frustration
