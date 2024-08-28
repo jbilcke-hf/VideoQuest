@@ -18,6 +18,7 @@ export interface Engine {
 }
 
 export const engines: Record<string, Engine> = {
+  /*
   cartesian_image: {
     type: "cartesian_image_turbo",
     label: "Turbo image",
@@ -26,6 +27,7 @@ export const engines: Record<string, Engine> = {
     modelName: "LCM-SDXL",
     modelUrl: "https://huggingface.co/latent-consistency/lcm-sdxl",
   },
+  */
   /*
   cartesian_image: {
     type: "cartesian_image",
@@ -43,14 +45,16 @@ export const engines: Record<string, Engine> = {
     modelName: "Zeroscope",
     modelUrl: "https://huggingface.co/cerspense/zeroscope_v2_576w",
   },
+  */
   spherical_image: {
     type: "spherical_image",
-    label: "Spherical image",
+    label: "Flux Panorama LoRA v2",
     visible: true,
     enabled: true,
-    modelName: "SDXL 360",
-    modelUrl: "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0",
+    modelName: "Flux Panorama LoRA v2",
+    modelUrl: "https://huggingface.co/jbilcke-hf/flux-dev-panorama-lora-2",
   },
+  /*
 
   spherical_video: {
     type: "spherical_video",
@@ -82,6 +86,6 @@ export const engines: Record<string, Engine> = {
   */
 }
 
-export const defaultEngine: EngineType = "cartesian_image"
+export const defaultEngine: EngineType = Object.keys(engines)[0] as EngineType
 
 export const getEngine = (type?: EngineType): Engine => engines[type || defaultEngine] || engines[defaultEngine]

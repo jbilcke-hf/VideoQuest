@@ -37,10 +37,10 @@ export const getDialogue = async ({
 Here is the original situation, which will inform you about the general game mood to follow (you must respect this): "${initialPrompt}".`
     : ""
 
-  const prompt = createLlamaPrompt([
-    {
-      role: "system",
-      content: [
+  let result = ""
+  try {
+    result = await predict({
+      systemPrompt: [
         `You are an AI game master.`,
         `You are going to receive new information about the current whereabouts and action of the player.`,
         basePrompt,
@@ -48,29 +48,16 @@ Here is the original situation, which will inform you about the general game moo
         `Please only write between 2 to 3 short sentences, please.`,
         `Please add a few funny puns and jokes.`,
         `But please don't say things like "Well, well, well" or "Ah, the classic combination of" it is annoying.`
-      ].filter(item => item).join("\n")
-    },
-    {
-      role: "user",
-      content: userSituationPrompt
-    }
-  ])
-
-
-  let result = ""
-  try {
-    result = await predict(prompt)
+      ].filter(item => item).join("\n"),
+      userPrompt: userSituationPrompt,
+      nbMaxNewTokens: 200
+    })
     if (!result.trim().length) {
       throw new Error("empty dialogue!")
     }
   } catch (err) {
-    console.log(`prediction of the dialogue failed, trying again..`)
-    try {
-      result = await predict(prompt+".")
-    } catch (err) {
-      console.error(`prediction of the dialogue failed again!`)
-      throw new Error(`failed to generate the dialogue ${err}`)
-    }
+    console.error(`prediction of the dialogue failed`)
+    throw new Error(`failed to generate the dialogue ${err}`)
   }
 
   const tmp = result.split("game master:").pop() || result

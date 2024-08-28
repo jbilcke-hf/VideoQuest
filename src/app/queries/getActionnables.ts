@@ -43,37 +43,24 @@ export const getActionnables = async ({
     ? `Here is some context information about the initial scene: ${initialPrompt}`
     : ""
 
-  const prompt = createLlamaPrompt([
-    {
-      role: "system",
-      content: [
-        `You are an API endpoint that can return a list of objects visible in the background image of a game.`,
-        basePrompt,
-        `You must list twelve (12) basic names of visible objects (eg. "door", "person", "window", "light", "floor", "knob", "button", "rock", "tree", "box", "glass".. etc) but don't list any word from abstract or immaterial concepts (ig. don't list words like "secret", "danger", "next move", "game" etc)`,
-        `The answer must be a JSON array, ie. a list of 12 quoted strings.`
-      ].filter(item => item).join("\n")
-    },
-    {
-      role: "user",
-      content: userSituationPrompt
-    }
-  ])
-
   let rawStringOutput = ""
   let result: string[] = []
 
   try {
-    rawStringOutput = await predict(prompt)
+    rawStringOutput = await predict({
+      systemPrompt: [
+        `You are an API endpoint that can return a list of objects visible in the background image of a game.`,
+        basePrompt,
+        `You must list twelve (12) basic names of visible objects (eg. "door", "person", "window", "light", "floor", "knob", "button", "rock", "tree", "box", "glass".. etc) but don't list any word from abstract or immaterial concepts (ig. don't list words like "secret", "danger", "next move", "game" etc)`,
+        `The answer must be a JSON array, ie. a list of 12 quoted strings.`
+      ].filter(item => item).join("\n"),
+      userPrompt: userSituationPrompt,
+      nbMaxNewTokens: 200,
+    })
     result = parseActionnablesOrThrow(rawStringOutput)
   } catch (err) {
-    console.log(`prediction of the actionnables failed, trying again..`)
-    try {
-      rawStringOutput = await predict(prompt+".")
-      result = parseActionnablesOrThrow(rawStringOutput)
-    } catch (err) {
-      console.error(`prediction of the actionnables failed again! going to use default value`)
-      console.log("for reference, rawStringOutput was: ", rawStringOutput)
-    }
+    console.error(`prediction of the actionnables failed, going to use default value`)
+    console.log("for reference, rawStringOutput was: ", rawStringOutput)
   }
   
   return normalizeActionnables(result)

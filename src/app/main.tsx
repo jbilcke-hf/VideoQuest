@@ -1,13 +1,13 @@
 "use client"
 
-import { ReactNode, useEffect, useRef, useState, useTransition } from "react"
+import { ReactNode, Suspense, useEffect, useRef, useState, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 
 import { SceneRenderer } from "@/app/interface/renderer"
 
-import { newRender, getRender } from "@/app/engine/render"
+import { newRender } from "@/app/engine/render"
 import { Engine, EngineType, defaultEngine, getEngine } from "@/app/engine/engines"
 
 import { OnInventoryEvent, RenderedScene, SceneEvent } from "@/types"
@@ -37,7 +37,8 @@ const getInitialRenderedScene = (): RenderedScene => ({
   maskUrl: "",
   segments: []
 })
-export default function Main() {
+
+function MainContent() {
   const [isPending, startTransition] = useTransition()
   const [rendered, setRendered] = useState<RenderedScene>(getInitialRenderedScene())
   const historyRef = useRef<RenderedScene[]>([])
@@ -73,116 +74,70 @@ export default function Main() {
   const [isBusy, setBusy] = useState<boolean>(true)
   const busyRef = useRef(true)
 
-  const loopRef = useRef<any>(null)
+  const pendingRef = useRef<any>(false)
 
   const [lastEventString, setLastEventString] = useState<string>("")
   const [lastEvent, setLastEvent] = useState<ReactNode>(null)
 
   const loadNextScene = async (nextSituation?: string, nextActionnables?: string[]) => {
-    
     await startTransition(async () => {
-      console.log("Rendering a scene for " + game.type)
+      if (pendingRef.current) { return }
+      pendingRef.current = true
 
-      // console.log(`rendering scene..`)
-      const newRendered = await newRender({
-        engine,
-
-        // SCENE PROMPT
-        prompt: game.getScenePrompt(nextSituation).join(", "),
-
-        // ACTIONNABLES
-        actionnables: normalizeActionnables(
-          Array.isArray(nextActionnables) && nextActionnables.length
-          ? nextActionnables
-          : game.initialActionnables
-        ),
-
-        clearCache
-      })
-
-      // detect if type game type changed while we were busy
-      // note that currently we reload the whol page when tha happens,
-      // so this code isn't that useful
-      if (game?.type !== gameRef?.current) {
-        console.log("game type changed! aborting..")
-        return
-      }
-
-      console.log("got the first version of our scene!", newRendered)
-
-      // in cache we didn't hit the cache and the request is still pending
-        // we cheat a bit by displaying the previous image as a placeholder
-      if (!newRendered.assetUrl && rendered.assetUrl && rendered.maskUrl) {
-        console.log("image is not in cache, using previous image as a placeholder..")
-        // this is better than displaying a blank image, no?
-        newRendered.assetUrl = rendered.assetUrl
-        newRendered.maskUrl = rendered.maskUrl
-      }
-
-      historyRef.current.unshift(newRendered)
-      setRendered(newRendered)
-
-      if (newRendered.status === "completed") {
-        setBusy(busyRef.current = false)
-      }
-    })
-  }
-
-  const checkRenderedLoop = async () => {
-    // console.log("checkRenderedLoop! rendered:", renderedRef.current)
-    clearTimeout(loopRef.current)
-  
-    if (!historyRef.current[0]?.renderId || historyRef.current[0]?.status !== "pending") {
-
-      // console.log("let's try again in a moments")
-      loopRef.current = setTimeout(() => checkRenderedLoop(), 1000)
-      return
-    } 
-
-    // console.log("checking rendering..")
-    await startTransition(async () => {
-      // console.log(`getting latest updated scene..`)
       try {
-        if (!historyRef.current[0]?.renderId) {
-          throw new Error(`missing renderId`)
-        }
+        console.log("Rendering a scene for " + game.type)
 
-      
-        // console.log(`calling getRender(${renderedRef.current.renderId})`)
-        const newRendered = await getRender(historyRef.current[0]?.renderId)
-        // console.log(`got latest updated scene:`, renderedRef.current)
+        // console.log(`rendering scene..`)
+        const newRendered = await newRender({
+          engine,
+
+          // SCENE PROMPT
+          prompt: game.getScenePrompt(nextSituation).join(", "),
+
+          // ACTIONNABLES
+          actionnables: normalizeActionnables(
+            Array.isArray(nextActionnables) && nextActionnables.length
+            ? nextActionnables
+            : game.initialActionnables
+          ),
+
+          clearCache
+        })
 
         // detect if type game type changed while we were busy
-        if (game?.type !== gameRef?.current) {
-          console.log("game type changed! aborting..")
-          return
-        }
+        // note that currently we reload the whol page when tha happens,
+        // so this code isn't that useful
+        if (game?.type === gameRef?.current) {
+          console.log("game type has not changedf, we can continue")
+            
+          console.log("got the first image of our scene!", newRendered)
 
-    
-        const before = JSON.stringify(historyRef.current[0])
-        const after = JSON.stringify(newRendered)
+          // in cache we didn't hit the cache and the request is still pending
+            // we cheat a bit by displaying the previous image as a placeholder
+          if (!newRendered.assetUrl && rendered.assetUrl && rendered.maskUrl) {
+            console.log("image is not in cache, using previous image as a placeholder..")
+            // this is better than displaying a blank image, no?
+            newRendered.assetUrl = rendered.assetUrl
+            newRendered.maskUrl = rendered.maskUrl
+          }
 
-        if (after !== before) {
-          console.log("updating scene..")
-          historyRef.current[0] = newRendered
-          setRendered(historyRef.current[0])
+          historyRef.current.unshift(newRendered)
+          setRendered(newRendered)
 
           if (newRendered.status === "completed") {
             setBusy(busyRef.current = false)
           }
         }
       } catch (err) {
-        console.error(err)
+        
+      } finally {
+        pendingRef.current = false
       }
-
-      clearTimeout(loopRef.current)
-      loopRef.current = setTimeout(() => checkRenderedLoop(), 1000)
     })
   }
-    
+
   useEffect(() => {
     loadNextScene()
-    checkRenderedLoop()
   }, [])
 
 
@@ -436,9 +391,7 @@ export default function Main() {
 
   const addBottomMarginForPhotoSphereMenu = engine.type.startsWith("spherical")
   return (
-    <div
-      className="flex flex-col w-full max-w-5xl"
-    >
+    <>
       <TopMenu
         engine={engine}
         game={game}
@@ -491,6 +444,17 @@ export default function Main() {
           />
         </div>
       </DndProvider>
+    </>
+  )
+}
+
+
+export default function Main() {
+  return (
+    <div
+      className="flex flex-col w-full max-w-5xl"
+    >
+      <Suspense><MainContent /></Suspense>
     </div>
   )
 }

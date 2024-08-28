@@ -11,7 +11,7 @@
   "dependencies": {
     "@gorgonjs/gorgon": "^1.4.1",
     "@huggingface/agents": "^0.0.4",
-    "@huggingface/inference": "^2.6.4",
+    "@huggingface/inference": "^2.8.0",
     "@photo-sphere-viewer/core": "^5.4.4",
     "@photo-sphere-viewer/markers-plugin": "^5.4.4",
     "@photo-sphere-viewer/video-plugin": "^5.4.4",
@@ -51,7 +51,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.1.1",
     "lucide-react": "^0.260.0",
-    "next": "14.0.0",
+    "next": "14.2.7",
     "photo-sphere-viewer-lensflare-plugin": "^1.1.2",
     "pick": "^0.0.1",
     "postcss": "8.4.26",

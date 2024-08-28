@@ -31,10 +31,10 @@ export const getBackground = async ({
 Here is the original scene in which the user was located at first, which will inform you about the general game mood to follow (you must respect this): "${initialPrompt}".`
     : ""
 
-  const prompt = createLlamaPrompt([
-    {
-      role: "system",
-      content: [
+  let result = ""
+  try {
+    result = await predict({
+      systemPrompt: [
         `You are a photo director.`,
         basePrompt,
         `You are going to receive new information about the current activity of the player.`,
@@ -42,32 +42,16 @@ Here is the original scene in which the user was located at first, which will in
         `Separate each of those category descriptions using a comma.`,
         `You MUST mention the following important objects that the user can click on: ${newActionnables}.`,
         `Be brief in your caption don't add your own comments. Be straight to the point, and never reply things like "As the player approaches.." or "As the player clicks.." or "the scene shifts to.." (the best is not not mention the player at all)`
-      ].filter(item => item).join("\n")
-    },
-    {
-      role: "user",
-      content: userSituationPrompt
-    }
-  ])
-
-
-  let result = ""
-  try {
-    result = await predict(prompt)
+      ].filter(item => item).join("\n"),
+      userPrompt: userSituationPrompt,
+      nbMaxNewTokens: 200
+    })
     if (!result.trim().length) {
-      throw new Error("empty result!")
+      throw new Error("empty result from the LLM provider")
     }
   } catch (err) {
-    console.log(`prediction of the background failed, trying again..`)
-    try {
-      result = await predict(prompt+".")
-      if (!result.trim().length) {
-        throw new Error("empty result!")
-      }
-    } catch (err) {
-      console.error(`prediction of the background failed again!`)
-      throw new Error(`failed to generate the background ${err}`)
-    }
+    console.error(`prediction of the background failed`)
+    throw new Error(`failed to generate the background ${err}`)
   }
 
   const tmp = result.split("Caption:").pop() || result

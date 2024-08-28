@@ -1,15 +1,9 @@
 "use server"
 
-
-
 import { RenderRequest, RenderedScene } from "@/types"
-import { Engine, EngineType } from "./engines"
 
-// note: there is no / at the end in the variable
-// so we have to add it ourselves if needed
-const apiUrl = process.env.RENDERING_ENGINE_API
-
-const cacheDurationInSec = 30 * 60 // 30 minutes
+import { Engine } from "./engines"
+import { getPanoramaFlux } from "./getPanoramaFlux"
 
 export async function newRender({
   prompt,
@@ -32,135 +26,54 @@ export async function newRender({
   }
 
   const nbFrames = engine.type.includes("video") ? 8 : 1
+  const isForVideo = nbFrames > 1
+  const nbSteps = isForVideo ? 30 : engine.type === "cartesian_image_turbo" ? 8 : 35
 
-  // return await Gorgon.get(cacheKey, async () => {
+  const request = {
+    prompt,
+    // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
+    nbFrames, // when nbFrames is 1, we will only generate static images
+    nbSteps,
+    actionnables,
+    segmentation: "firstframe", // one day we will remove this param, to make it automatic
+    width: isForVideo ? 576 : 1024,
+    height: isForVideo ? 320 : 512,
+    upscalingFactor: 2,
 
-  let defaulResult: RenderedScene = {
-    renderId: "",
-    status: "error",
-    assetUrl: "",
-    alt: prompt || "",
-    maskUrl: "",
-    error: "failed to fetch the data",
-    segments: []
-  }
+    turbo: false,
+  } as Partial<RenderRequest>
 
   try {
-    // console.log(`calling POST ${apiUrl}/render with prompt: ${prompt}`)
-
-    const isForVideo = nbFrames > 1
-    const nbSteps = isForVideo ? 30 : engine.type === "cartesian_image_turbo" ? 8 : 35
-
-    const request = {
+    const assetUrl = await getPanoramaFlux({
       prompt,
-      // nbFrames: 8 and nbSteps: 15 --> ~10 sec generation
-      nbFrames, // when nbFrames is 1, we will only generate static images
-      nbSteps,
-      actionnables,
-      segmentation: "firstframe", // one day we will remove this param, to make it automatic
-      width: isForVideo ? 576 : 1024,
-      height: isForVideo ? 320 : 768,
-
-      // on VideoQuest we use an aggressive setting: 4X upscaling
-      // this generates images that can be slow to load, but that's
-      // not too much of an issue since we use async loading
-      upscalingFactor: 4,
-
-      turbo:  engine.type === "cartesian_image_turbo",
-
-      // note that we never disable the cache completely for VideoQuest
-      // that's because in the feedbacks people prefer speed to avoid frustration
-      cache: clearCache ? "renew" : "use",
-
-    } as Partial<RenderRequest>
-
-    console.table(request)
-
-      const res = await fetch(`${apiUrl}/render`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
-        },
-        body: JSON.stringify(request),
-        cache: 'no-store',
-      // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
-      // next: { revalidate: 1 }
-      })
-
-      // console.log("res:", res)
-      // The return value is *not* serialized
-      // You can return Date, Map, Set, etc.
-      
-      // Recommendation: handle errors
-      if (res.status !== 200) {
-        // This will activate the closest `error.js` Error Boundary
-        throw new Error('Failed to fetch data')
-      }
-      
-      const response = (await res.json()) as RenderedScene
-      // console.log("response:", response)
-      return response
-    } catch (err) {
-      console.error(err)
-      // Gorgon.clear(cacheKey)
-      return defaulResult
-    }
-
-  // }, cacheDurationInSec * 1000)
-}
-
-export async function getRender(renderId: string) {
-  if (!renderId) {
-    console.error(`cannot call the rendering API without a renderId, aborting..`)
-    throw new Error(`cannot call the rendering API without a renderId, aborting..`)
-  }
-
-  let defaulResult: RenderedScene = {
-    renderId: "",
-    status: "pending",
-    assetUrl: "",
-    alt: "",
-    maskUrl: "",
-    error: "",
-    segments: []
-  }
-
-  try {
-    // console.log(`calling GET ${apiUrl}/render with renderId: ${renderId}`)
-    const res = await fetch(`${apiUrl}/render/${renderId}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.VC_SECRET_ACCESS_TOKEN}`,
-      },
-      cache: 'no-store',
-    // we can also use this (see https://vercel.com/blog/vercel-cache-api-nextjs-cache)
-    // next: { revalidate: 1 }
+      width: 1024,
+      height: 512
     })
 
-    // console.log("res:", res)
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
-    
-    // Recommendation: handle errors
-    if (res.status !== 200) {
-      // This will activate the closest `error.js` Error Boundary
-      throw new Error('Failed to fetch data')
+    let result: RenderedScene = {
+      renderId: "",
+      status: "completed",
+      assetUrl,
+      alt: prompt || "",
+      maskUrl: "",
+      error: "",
+      segments: []
     }
     
-    const response = (await res.json()) as RenderedScene
-    // console.log("response:", response)
-    return response
+    return result
   } catch (err) {
     console.error(err)
-    defaulResult.status = "error"
-    defaulResult.error = `${err}`
-    // Gorgon.clear(cacheKey)
+
+    let defaulResult: RenderedScene = {
+      renderId: "",
+      status: "error",
+      assetUrl: "",
+      alt: prompt || "",
+      maskUrl: "",
+      error: "failed to fetch the data",
+      segments: []
+    }
+
     return defaulResult
   }
-
-  // }, cacheDurationInSec * 1000)
 }

@@ -1,9 +1,7 @@
 import { Game } from "@/app/games/types"
-import { createLlamaPrompt } from "@/lib/createLlamaPrompt"
 
 import { getBase } from "./getBase"
 import { predict } from "./predict"
-
 
 export const getSound = async ({
   game,
@@ -34,10 +32,10 @@ export const getSound = async ({
     ? `Here is the original scene in which the user was located at first, which will inform you about the general settings to follow (you must respect this): "${initialPrompt}".`
     : ""
 
-  const prompt = createLlamaPrompt([
-    {
-      role: "system",
-      content: [
+  let result = ""
+  try {
+    result = await predict({
+      systemPrompt: [
         `You are the AI game master of a role video game.`,
         `You are going to receive new information about the current whereabouts and action of the player.`,
         basePrompt,
@@ -52,26 +50,13 @@ export const getSound = async ({
         `Here are some more instructions, to enhance the Qqality of your generated audio:`,
         `1. Try to use more adjectives to describe your sound. For example: "A man is speaking clearly and slowly in a large room" is better than "A man is speaking".\n`,
         `2. It's better to use general terms like 'man' or 'woman' instead of specific names for individuals or abstract objects that humans may not be familiar with, such as 'mummy'.\n`
-      ].filter(item => item).join("\n")
-    },
-    {
-      role: "user",
-      content: userSituationPrompt
-    }
-  ])
-
-
-  let result = ""
-  try {
-    result = await predict(prompt)
+      ].filter(item => item).join("\n"),
+      userPrompt: userSituationPrompt,
+      nbMaxNewTokens: 200
+    })
   } catch (err) {
-    console.log(`prediction of the sound prompt failed, trying again..`)
-    try {
-      result = await predict(prompt)
-    } catch (err) {
-      console.error(`prediction of the sound prompt failed again!`)
-      throw new Error(`failed to generate the dialogue ${err}`)
-    }
+    console.error(`prediction of the sound prompt failed`)
+    throw new Error(`failed to generate the dialogue ${err}`)
   }
 
   return result
